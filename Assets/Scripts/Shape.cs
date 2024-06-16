@@ -79,8 +79,8 @@ namespace UnityEngine.UI
                         }
                         else
                         {
-                            var vertexPerCorner = Mathf.Max(Mathf.CeilToInt(m_RoundVertexCount / 4f), 3);
                             var roundness = Mathf.Min(m_Roundness, r.width * 0.5f, r.height * 0.5f);
+                            var vertexPerCorner = Mathf.Max(Mathf.CeilToInt(Mathf.Min(m_RoundVertexCount, Mathf.CeilToInt(0.5f * Mathf.PI * roundness)) / 4f), 2);
 
                             for (var cornerIdx = 0; cornerIdx < 4; cornerIdx ++)
                             {
@@ -162,7 +162,7 @@ namespace UnityEngine.UI
                         var widthRate = r.width * 0.5f / radius;
                         var heightRate = r.height * 0.5f / radius;
                         
-                        int segments = Mathf.Max(m_RoundVertexCount, 8);
+                        int segments = Mathf.Max(Mathf.Min(m_RoundVertexCount, Mathf.CeilToInt(0.5f * Mathf.PI * radius)), 8);
                         float angle = 2.0f * Mathf.PI / segments;
                         float cos = Mathf.Cos(angle);
                         float sin = Mathf.Sin(angle);
