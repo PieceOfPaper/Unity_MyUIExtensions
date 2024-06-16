@@ -18,7 +18,7 @@ namespace UnityEngine.UI
         
         public override void ModifyMesh(VertexHelper vh)
         {
-            if (!IsActive() || vh.currentVertCount == 0)
+            if (!IsActive() || vh.currentVertCount == 0 || graphic == null)
                 return;
             
             var input = ListPool<UIVertex>.Get();
@@ -99,16 +99,16 @@ namespace UnityEngine.UI
                     switch (dir)
                     {
                         case Direction.Horizontal:
-                            color0 = gradient.Evaluate((posXList[x - 1] - min.x) / (max.x - min.x));
-                            color1 = gradient.Evaluate((posXList[x] - min.x) / (max.x - min.x));
-                            color2 = gradient.Evaluate((posXList[x - 1] - min.x) / (max.x - min.x));
-                            color3 = gradient.Evaluate((posXList[x] - min.x) / (max.x - min.x));
+                            color0 = ColorScalar(graphic.color, gradient.Evaluate((posXList[x - 1] - min.x) / (max.x - min.x)));
+                            color1 = ColorScalar(graphic.color, gradient.Evaluate((posXList[x] - min.x) / (max.x - min.x)));
+                            color2 = ColorScalar(graphic.color, gradient.Evaluate((posXList[x - 1] - min.x) / (max.x - min.x)));
+                            color3 = ColorScalar(graphic.color, gradient.Evaluate((posXList[x] - min.x) / (max.x - min.x)));
                             break;
                         case Direction.Vertical:
-                            color0 = gradient.Evaluate((posYList[y - 1] - min.y) / (max.y - min.y));
-                            color1 = gradient.Evaluate((posYList[y - 1] - min.y) / (max.y - min.y));
-                            color2 = gradient.Evaluate((posYList[y] - min.y) / (max.y - min.y));
-                            color3 = gradient.Evaluate((posYList[y] - min.y) / (max.y - min.y));
+                            color0 = ColorScalar(graphic.color, gradient.Evaluate((posYList[y - 1] - min.y) / (max.y - min.y)));
+                            color1 = ColorScalar(graphic.color, gradient.Evaluate((posYList[y - 1] - min.y) / (max.y - min.y)));
+                            color2 = ColorScalar(graphic.color, gradient.Evaluate((posYList[y] - min.y) / (max.y - min.y)));
+                            color3 = ColorScalar(graphic.color, gradient.Evaluate((posYList[y] - min.y) / (max.y - min.y)));
                             break;
                     }
                     
@@ -127,6 +127,11 @@ namespace UnityEngine.UI
             ListPool<UIVertex>.Release(output);
             ListPool<float>.Release(posXList);
             ListPool<float>.Release(posYList);
+        }
+        
+        private Color ColorScalar(Color color1, Color color2)
+        {
+            return new Color(color1.r * color2.r, color1.g * color2.g, color1.b * color2.b, color1.a * color2.a);
         }
     }
 
