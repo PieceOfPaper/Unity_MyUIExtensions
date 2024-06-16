@@ -6,7 +6,7 @@ namespace UnityEngine.UI
 {
     [RequireComponent(typeof(CanvasRenderer))]
     [AddComponentMenu("UI/Shape", 11)]
-    public class Shape : Graphic
+    public class Shape : MaskableGraphic
     {
         public enum ShapeType
         {
