@@ -21,6 +21,9 @@ namespace UnityEngine.UI
 #if UNITY_EDITOR
         private void OnDrawGizmosSelected()
         {
+            if (!IsActive())
+                return;
+            
             Gizmos.matrix = transform.localToWorldMatrix;
             Gizmos.color = gizmosColor;
             for (var verIdx = 0; verIdx < m_Vertices.Count; verIdx ++)
