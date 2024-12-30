@@ -9,6 +9,7 @@ namespace Powerful
     [CanEditMultipleObjects]
     public class SelectableEditor : UnityEditor.UI.SelectableEditor
     {
+        public bool selectableFoldout = false;
         private SerializedProperty m_OnClickProperty;
         private SerializedProperty m_EnableLongPressProperty;
 
@@ -21,23 +22,30 @@ namespace Powerful
 
         public override void OnInspectorGUI()
         {
-            base.OnInspectorGUI();
-            EditorGUILayout.Space();
-
-            serializedObject.Update();
-            EditorGUILayout.PropertyField(m_OnClickProperty);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("m_OnSubmitToClick"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("m_EnableEventOnDisabled"));
-            EditorGUILayout.Space();
-            EditorGUILayout.PropertyField(m_EnableLongPressProperty);
-            if (m_EnableLongPressProperty.hasMultipleDifferentValues || m_EnableLongPressProperty.boolValue == true)
+            selectableFoldout = EditorGUILayout.Foldout(selectableFoldout, "Selectable", EditorStyles.foldoutHeader);
+            if (selectableFoldout == true)
             {
                 EditorGUI.indentLevel ++;
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("m_OnBeginLongPress"));
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("m_OnEndLongPress"));
+                base.OnInspectorGUI();
+                EditorGUILayout.Space();
+
+                serializedObject.Update();
+                EditorGUILayout.PropertyField(m_OnClickProperty);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("m_OnSubmitToClick"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("m_EnableEventOnDisabled"));
+                EditorGUILayout.Space();
+                EditorGUILayout.PropertyField(m_EnableLongPressProperty);
+                if (m_EnableLongPressProperty.hasMultipleDifferentValues || m_EnableLongPressProperty.boolValue == true)
+                {
+                    EditorGUI.indentLevel ++;
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("m_OnBeginLongPress"));
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("m_OnEndLongPress"));
+                    EditorGUI.indentLevel --;
+                }
+                serializedObject.ApplyModifiedProperties();
+                
                 EditorGUI.indentLevel --;
             }
-            serializedObject.ApplyModifiedProperties();
         }
     }
 }
