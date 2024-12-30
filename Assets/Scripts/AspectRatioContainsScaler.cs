@@ -16,6 +16,8 @@ namespace UnityEngine.UI
         public float scaleMin { get { return m_ScaleMin; } set { if (SetPropertyUtility_SetStruct(ref m_ScaleMin, value)) SetDirty(); } }
         [SerializeField] private float m_ScaleMax = 10f;
         public float scaleMax { get { return m_ScaleMax; } set { if (SetPropertyUtility_SetStruct(ref m_ScaleMax, value)) SetDirty(); } }
+        [Range(0f, 1f)] [SerializeField] private float m_ScaleRatio = 1f;
+        public float scaleRatio { get { return m_ScaleRatio; } set { if (SetPropertyUtility_SetStruct(ref m_ScaleRatio, value)) SetDirty(); } }
         [SerializeField] private bool m_ContainsHorizontal = true;
         public bool containsHorizontal { get { return m_ContainsHorizontal; } set { if (SetPropertyUtility_SetStruct(ref m_ContainsHorizontal, value)) SetDirty(); } }
         [SerializeField] private bool m_ContainsVertical = true;
@@ -136,7 +138,7 @@ namespace UnityEngine.UI
                 scale = Mathf.Min(scale, parentSize.y / rectTransform.rect.height);
             }
 
-            rectTransform.localScale = Vector3.one * Mathf.Max(scale, m_ScaleMin);
+            rectTransform.localScale = Vector3.one * Mathf.Lerp(1f, Mathf.Max(scale, m_ScaleMin), m_ScaleRatio);
         }
 
         private Vector2 GetParentSize()
