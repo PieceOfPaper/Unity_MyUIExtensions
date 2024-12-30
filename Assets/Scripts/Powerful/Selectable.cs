@@ -37,7 +37,7 @@ namespace Powerful
         private SelectableColorApplier[] m_CachedColorApplier;
 
 
-        private const float LONGPRESS_READY_TIME = 1.0f;
+        private const float LONGPRESS_READY_TIME = 1.0f; //TODO - EventSystem 확장으로 빼면 좋겠다.
         public enum LongPressState
         {
             None,
@@ -83,7 +83,7 @@ namespace Powerful
                     {
                         var currentPointerPosition = UIUtil.GetPoinsterPosition(m_LongPressPointerID);
                         var deltaSqr = (currentPointerPosition - m_LongPressStartPoint).sqrMagnitude;
-                        var dragThreshold = EventSystem.current.pixelDragThreshold;
+                        var dragThreshold = EventSystem.current == null ? 0 : EventSystem.current.pixelDragThreshold;
                         if (deltaSqr >= (dragThreshold * dragThreshold))
                             EndLongPress();
                     }
@@ -264,11 +264,11 @@ namespace Powerful
 
         protected virtual void OnProcessPointerClick(BaseEventData eventData) { }
 
-        protected virtual void OnProcessReadyLongPress() { Debug.Log("OnProcessReadyLongPress"); }
+        protected virtual void OnProcessReadyLongPress() { }
 
-        protected virtual void OnProcessBeginLongPress() { Debug.Log("OnProcessBeginLongPress"); }
+        protected virtual void OnProcessBeginLongPress() { }
 
-        protected virtual void OnProcessEndLongPress() { Debug.Log("OnProcessEndLongPress"); }
+        protected virtual void OnProcessEndLongPress() { }
 
 
 
