@@ -124,7 +124,7 @@ namespace UnityEngine.UI
             rectTransform.anchorMin = Vector2.one * 0.5f;
             rectTransform.anchorMax = Vector2.one * 0.5f;
             rectTransform.pivot = Vector2.one * 0.5f;
-            rectTransform.anchoredPosition = Vector2.one * 0.5f;
+            rectTransform.anchoredPosition = Vector2.zero;
 
             var parentSize = GetParentSize();
             var scale = m_ScaleMax;
