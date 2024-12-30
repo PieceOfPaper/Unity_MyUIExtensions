@@ -30,6 +30,7 @@ namespace Powerful
 
 
         private SelectableTransitionApplier[] m_CachedTransitionApplier;
+        private SelectableColorApplier[] m_CachedColorApplier;
         
         protected Selectable() { }
 
@@ -44,6 +45,14 @@ namespace Powerful
             {
                 if (m_CachedTransitionApplier[i] == null) continue;
                 m_CachedTransitionApplier[i].DoStateTransition((int)state, instant);
+            }
+            
+            if (Application.isPlaying == false || m_CachedColorApplier == null)
+                m_CachedColorApplier = GetComponentsInChildren<SelectableColorApplier>(true);
+            for (var i = 0; i < m_CachedColorApplier.Length; i ++)
+            {
+                if (m_CachedColorApplier[i] == null) continue;
+                m_CachedColorApplier[i].DoStateTransition((int)state, instant);
             }
         }
 
