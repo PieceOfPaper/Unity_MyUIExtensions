@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
@@ -10,7 +9,7 @@ using UnityEngine.Serialization;
 
 namespace Powerful
 {
-    // [AddComponentMenu("UI/Powerful/Selectable", 35)]
+    [AddComponentMenu("UI/Powerful/Powerful.Selectable", 35)]
     [ExecuteAlways]
     [SelectionBase]
     [DisallowMultipleComponent]
