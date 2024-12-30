@@ -28,10 +28,25 @@ namespace Powerful
         [SerializeField] private bool m_OnSubmitToClick = false;
         [SerializeField] private bool m_EnableEventOnDisabled = false;
 
-        
+
+        private SelectableTransitionApplier[] m_CachedTransitionApplier;
         
         protected Selectable() { }
-        
+
+
+        protected override void DoStateTransition(SelectionState state, bool instant)
+        {
+            base.DoStateTransition(state, instant);
+
+            if (Application.isPlaying == false || m_CachedTransitionApplier == null)
+                m_CachedTransitionApplier = GetComponentsInChildren<SelectableTransitionApplier>(true);
+            for (var i = 0; i < m_CachedTransitionApplier.Length; i ++)
+            {
+                if (m_CachedTransitionApplier[i] == null) continue;
+                m_CachedTransitionApplier[i].DoStateTransition((int)state, instant);
+            }
+        }
+
 
         public override void OnPointerDown(PointerEventData eventData)
         {
