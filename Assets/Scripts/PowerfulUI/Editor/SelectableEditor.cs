@@ -10,25 +10,37 @@ namespace PowerfulUI
     public class SelectableEditor : UnityEditor.UI.SelectableEditor
     {
         public bool selectableFoldout = false;
-        private SerializedProperty m_OnClickProperty;
-        private SerializedProperty m_EnableLongPressProperty;
+        public bool eventsFoldout = false;
+        
+        protected SerializedProperty m_ScriptProperty;
+        protected SerializedProperty m_OnClickProperty;
+        protected SerializedProperty m_EnableLongPressProperty;
 
         protected override void OnEnable()
         {
             base.OnEnable();
+            m_ScriptProperty = serializedObject.FindProperty("m_Script");
             m_OnClickProperty = serializedObject.FindProperty("m_OnClick");
             m_EnableLongPressProperty = serializedObject.FindProperty("m_EnableLongPress");
         }
 
         public override void OnInspectorGUI()
         {
+            using (new EditorGUI.DisabledScope(true))
+                EditorGUILayout.PropertyField(m_ScriptProperty);
+            
             selectableFoldout = EditorGUILayout.Foldout(selectableFoldout, "Selectable", EditorStyles.foldoutHeader);
             if (selectableFoldout == true)
             {
                 EditorGUI.indentLevel ++;
                 base.OnInspectorGUI();
-                EditorGUILayout.Space();
-
+                EditorGUI.indentLevel --;
+            }
+            
+            eventsFoldout = EditorGUILayout.Foldout(eventsFoldout, "Events", EditorStyles.foldoutHeader);
+            if (eventsFoldout == true)
+            {
+                EditorGUI.indentLevel ++;
                 serializedObject.Update();
                 EditorGUILayout.PropertyField(m_OnClickProperty);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("m_OnSubmitToClick"));
@@ -43,8 +55,8 @@ namespace PowerfulUI
                     EditorGUI.indentLevel --;
                 }
                 serializedObject.ApplyModifiedProperties();
-                
                 EditorGUI.indentLevel --;
+                EditorGUILayout.Space();
             }
         }
     }
