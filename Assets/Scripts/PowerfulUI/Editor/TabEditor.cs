@@ -9,7 +9,6 @@ namespace PowerfulUI
     [CanEditMultipleObjects]
     public class TabEditor : SelectableEditor
     {
-        public bool tabFoldout = false;
         SerializedProperty m_GroupProperty;
         SerializedProperty m_IsOnProperty;
         
@@ -24,38 +23,33 @@ namespace PowerfulUI
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
+            EditorGUILayout.Space();
             
-            tabFoldout = EditorGUILayout.Foldout(tabFoldout, "Tab", EditorStyles.foldoutHeader);
-            if (tabFoldout == true)
+            serializedObject.Update();
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("m_Index"));
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("m_Group"));
+            if (EditorGUI.EndChangeCheck())
             {
-                EditorGUI.indentLevel ++;
-                serializedObject.Update();
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("m_Index"));
-                EditorGUI.BeginChangeCheck();
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("m_Group"));
-                if (EditorGUI.EndChangeCheck())
+                for (var i = 0; i < targets.Length; i ++)
                 {
-                    for (var i = 0; i < targets.Length; i ++)
-                    {
-                        ((Tab)targets[i]).group = m_GroupProperty.objectReferenceValue == null ? null : (TabGroup)m_GroupProperty.objectReferenceValue;
-                    }
+                    ((Tab)targets[i]).group = m_GroupProperty.objectReferenceValue == null ? null : (TabGroup)m_GroupProperty.objectReferenceValue;
                 }
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("m_Ons"));
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("m_Offs"));
-                EditorGUI.BeginChangeCheck();
-                using (new EditorGUI.DisabledScope(m_GroupProperty.objectReferenceValue !=  null))
-                    EditorGUILayout.PropertyField(m_IsOnProperty);
-                if (EditorGUI.EndChangeCheck())
-                {
-                    for (var i = 0; i < targets.Length; i ++)
-                    {
-                        ((Tab)targets[i]).isOn = m_IsOnProperty.boolValue;
-                    }
-                }
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("m_OnValueChanged"));
-                serializedObject.ApplyModifiedProperties();
-                EditorGUI.indentLevel --;
             }
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("m_Ons"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("m_Offs"));
+            EditorGUI.BeginChangeCheck();
+            using (new EditorGUI.DisabledScope(m_GroupProperty.objectReferenceValue !=  null))
+                EditorGUILayout.PropertyField(m_IsOnProperty);
+            if (EditorGUI.EndChangeCheck())
+            {
+                for (var i = 0; i < targets.Length; i ++)
+                {
+                    ((Tab)targets[i]).isOn = m_IsOnProperty.boolValue;
+                }
+            }
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("m_OnValueChanged"));
+            serializedObject.ApplyModifiedProperties();
         }
     }
 
