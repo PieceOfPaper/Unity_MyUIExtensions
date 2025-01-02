@@ -15,49 +15,51 @@ namespace PowerfulUI
         public bool navigationFoldout { get => EditorPrefs.GetBool("PowerfulUI.SelectableEditor.navigationFoldout", false); set => EditorPrefs.SetBool("PowerfulUI.SelectableEditor.navigationFoldout", value); }
         public bool eventsFoldout { get => EditorPrefs.GetBool("PowerfulUI.SelectableEditor.eventsFoldout", false); set => EditorPrefs.SetBool("PowerfulUI.SelectableEditor.eventsFoldout", value); }
         
-        protected SerializedProperty m_ScriptProperty;
-        protected SerializedProperty m_InteractableProperty;
+        //변수 이름 앞에 PowerfulUI_ 붙인 이유는,
+        //UnityEditor.UI.SelectableEditor에 변수명과 중첩되서 어쩔 수 없이 붙였다.
+        protected SerializedProperty m_PowerfulUI_ScriptProperty;
+        protected SerializedProperty m_PowerfulUI_InteractableProperty;
         
-        protected SerializedProperty m_TargetGraphicProperty;
-        protected SerializedProperty m_TransitionProperty;
-        protected SerializedProperty m_ColorBlockProperty;
-        protected SerializedProperty m_SpriteStateProperty;
-        protected SerializedProperty m_AnimTriggerProperty;
-        protected AnimBool m_ShowColorTint = new AnimBool();
-        protected AnimBool m_ShowSpriteTrasition = new AnimBool();
-        protected AnimBool m_ShowAnimTransition  = new AnimBool();
+        protected SerializedProperty m_PowerfulUI_TargetGraphicProperty;
+        protected SerializedProperty m_PowerfulUI_TransitionProperty;
+        protected SerializedProperty m_PowerfulUI_ColorBlockProperty;
+        protected SerializedProperty m_PowerfulUI_SpriteStateProperty;
+        protected SerializedProperty m_PowerfulUI_AnimTriggerProperty;
+        protected AnimBool m_PowerfulUI_ShowColorTint = new AnimBool();
+        protected AnimBool m_PowerfulUI_ShowSpriteTrasition = new AnimBool();
+        protected AnimBool m_PowerfulUI_ShowAnimTransition  = new AnimBool();
         
-        protected SerializedProperty m_NavigationProperty;
-        protected GUIContent m_VisualizeNavigation = EditorGUIUtility.TrTextContent("Visualize", "Show navigation flows between selectable UI elements.");
+        protected SerializedProperty m_PowerfulUI_NavigationProperty;
+        protected GUIContent m_PowerfulUI_VisualizeNavigation = EditorGUIUtility.TrTextContent("Visualize", "Show navigation flows between selectable UI elements.");
         
-        protected SerializedProperty m_OnClickProperty;
-        protected SerializedProperty m_EnableLongPressProperty;
+        protected SerializedProperty m_PowerfulUI_OnClickProperty;
+        protected SerializedProperty m_PowerfulUI_EnableLongPressProperty;
 
         protected override void OnEnable()
         {
             base.OnEnable();
             
-            m_ScriptProperty = serializedObject.FindProperty("m_Script");
-            m_InteractableProperty  = serializedObject.FindProperty("m_Interactable");
+            m_PowerfulUI_ScriptProperty = serializedObject.FindProperty("m_Script");
+            m_PowerfulUI_InteractableProperty = serializedObject.FindProperty("m_Interactable");
             
-            m_TargetGraphicProperty = serializedObject.FindProperty("m_TargetGraphic");
-            m_TransitionProperty    = serializedObject.FindProperty("m_Transition");
-            m_ColorBlockProperty    = serializedObject.FindProperty("m_Colors");
-            m_SpriteStateProperty   = serializedObject.FindProperty("m_SpriteState");
-            m_AnimTriggerProperty   = serializedObject.FindProperty("m_AnimationTriggers");
+            m_PowerfulUI_TargetGraphicProperty = serializedObject.FindProperty("m_TargetGraphic");
+            m_PowerfulUI_TransitionProperty = serializedObject.FindProperty("m_Transition");
+            m_PowerfulUI_ColorBlockProperty = serializedObject.FindProperty("m_Colors");
+            m_PowerfulUI_SpriteStateProperty = serializedObject.FindProperty("m_SpriteState");
+            m_PowerfulUI_AnimTriggerProperty = serializedObject.FindProperty("m_AnimationTriggers");
 
-            var trans = (UnityEngine.UI.Selectable.Transition)m_TransitionProperty.enumValueIndex;
-            m_ShowColorTint.value       = (trans == UnityEngine.UI.Selectable.Transition.ColorTint);
-            m_ShowSpriteTrasition.value = (trans == UnityEngine.UI.Selectable.Transition.SpriteSwap);
-            m_ShowAnimTransition.value  = (trans == UnityEngine.UI.Selectable.Transition.Animation);
+            var trans = (UnityEngine.UI.Selectable.Transition)m_PowerfulUI_TransitionProperty.enumValueIndex;
+            m_PowerfulUI_ShowColorTint.value = (trans == UnityEngine.UI.Selectable.Transition.ColorTint);
+            m_PowerfulUI_ShowSpriteTrasition.value = (trans == UnityEngine.UI.Selectable.Transition.SpriteSwap);
+            m_PowerfulUI_ShowAnimTransition.value = (trans == UnityEngine.UI.Selectable.Transition.Animation);
 
-            m_ShowColorTint.valueChanged.AddListener(Repaint);
-            m_ShowSpriteTrasition.valueChanged.AddListener(Repaint);
+            m_PowerfulUI_ShowColorTint.valueChanged.AddListener(Repaint);
+            m_PowerfulUI_ShowSpriteTrasition.valueChanged.AddListener(Repaint);
             
-            m_NavigationProperty    = serializedObject.FindProperty("m_Navigation");
+            m_PowerfulUI_NavigationProperty = serializedObject.FindProperty("m_Navigation");
             
-            m_OnClickProperty = serializedObject.FindProperty("m_OnClick");
-            m_EnableLongPressProperty = serializedObject.FindProperty("m_EnableLongPress");
+            m_PowerfulUI_OnClickProperty = serializedObject.FindProperty("m_OnClick");
+            m_PowerfulUI_EnableLongPressProperty = serializedObject.FindProperty("m_EnableLongPress");
         }
 
         public override void OnInspectorGUI()
@@ -65,8 +67,8 @@ namespace PowerfulUI
             serializedObject.Update();
             
             using (new EditorGUI.DisabledScope(true))
-                EditorGUILayout.PropertyField(m_ScriptProperty);
-            EditorGUILayout.PropertyField(m_InteractableProperty);
+                EditorGUILayout.PropertyField(m_PowerfulUI_ScriptProperty);
+            EditorGUILayout.PropertyField(m_PowerfulUI_InteractableProperty);
             
             transitionFoldout = EditorGUILayout.Foldout(transitionFoldout, "Transition", EditorStyles.foldoutHeader);
             if (transitionFoldout == true)
@@ -88,12 +90,12 @@ namespace PowerfulUI
             if (eventsFoldout == true)
             {
                 EditorGUI.indentLevel ++;
-                EditorGUILayout.PropertyField(m_OnClickProperty);
+                EditorGUILayout.PropertyField(m_PowerfulUI_OnClickProperty);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("m_OnSubmitToClick"));
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("m_EnableEventOnDisabled"));
                 EditorGUILayout.Space();
-                EditorGUILayout.PropertyField(m_EnableLongPressProperty);
-                if (m_EnableLongPressProperty.hasMultipleDifferentValues || m_EnableLongPressProperty.boolValue == true)
+                EditorGUILayout.PropertyField(m_PowerfulUI_EnableLongPressProperty);
+                if (m_PowerfulUI_EnableLongPressProperty.hasMultipleDifferentValues || m_PowerfulUI_EnableLongPressProperty.boolValue == true)
                 {
                     EditorGUI.indentLevel ++;
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("m_OnBeginLongPress"));
@@ -108,24 +110,24 @@ namespace PowerfulUI
 
         public virtual void OnInspectorGUI_Transition()
         {
-            var trans = (UnityEngine.UI.Selectable.Transition)m_TransitionProperty.enumValueIndex;
+            var trans = (UnityEngine.UI.Selectable.Transition)m_PowerfulUI_TransitionProperty.enumValueIndex;
 
-            var graphic = m_TargetGraphicProperty.objectReferenceValue as Graphic;
+            var graphic = m_PowerfulUI_TargetGraphicProperty.objectReferenceValue as Graphic;
             if (graphic == null)
                 graphic = (target as Selectable).GetComponent<Graphic>();
 
             var animator = (target as Selectable).GetComponent<Animator>();
-            m_ShowColorTint.target = (!m_TransitionProperty.hasMultipleDifferentValues && trans == UnityEngine.UI.Selectable.Transition.ColorTint);
-            m_ShowSpriteTrasition.target = (!m_TransitionProperty.hasMultipleDifferentValues && trans == UnityEngine.UI.Selectable.Transition.SpriteSwap);
-            m_ShowAnimTransition.target = (!m_TransitionProperty.hasMultipleDifferentValues && trans == UnityEngine.UI.Selectable.Transition.Animation);
+            m_PowerfulUI_ShowColorTint.target = (!m_PowerfulUI_TransitionProperty.hasMultipleDifferentValues && trans == UnityEngine.UI.Selectable.Transition.ColorTint);
+            m_PowerfulUI_ShowSpriteTrasition.target = (!m_PowerfulUI_TransitionProperty.hasMultipleDifferentValues && trans == UnityEngine.UI.Selectable.Transition.SpriteSwap);
+            m_PowerfulUI_ShowAnimTransition.target = (!m_PowerfulUI_TransitionProperty.hasMultipleDifferentValues && trans == UnityEngine.UI.Selectable.Transition.Animation);
 
-            EditorGUILayout.PropertyField(m_TransitionProperty);
+            EditorGUILayout.PropertyField(m_PowerfulUI_TransitionProperty);
 
             ++EditorGUI.indentLevel;
             {
                 if (trans == Selectable.Transition.ColorTint || trans == UnityEngine.UI.Selectable.Transition.SpriteSwap)
                 {
-                    EditorGUILayout.PropertyField(m_TargetGraphicProperty);
+                    EditorGUILayout.PropertyField(m_PowerfulUI_TargetGraphicProperty);
                 }
 
                 switch (trans)
@@ -141,21 +143,21 @@ namespace PowerfulUI
                         break;
                 }
 
-                if (EditorGUILayout.BeginFadeGroup(m_ShowColorTint.faded))
+                if (EditorGUILayout.BeginFadeGroup(m_PowerfulUI_ShowColorTint.faded))
                 {
-                    EditorGUILayout.PropertyField(m_ColorBlockProperty);
+                    EditorGUILayout.PropertyField(m_PowerfulUI_ColorBlockProperty);
                 }
                 EditorGUILayout.EndFadeGroup();
 
-                if (EditorGUILayout.BeginFadeGroup(m_ShowSpriteTrasition.faded))
+                if (EditorGUILayout.BeginFadeGroup(m_PowerfulUI_ShowSpriteTrasition.faded))
                 {
-                    EditorGUILayout.PropertyField(m_SpriteStateProperty);
+                    EditorGUILayout.PropertyField(m_PowerfulUI_SpriteStateProperty);
                 }
                 EditorGUILayout.EndFadeGroup();
 
-                if (EditorGUILayout.BeginFadeGroup(m_ShowAnimTransition.faded))
+                if (EditorGUILayout.BeginFadeGroup(m_PowerfulUI_ShowAnimTransition.faded))
                 {
-                    EditorGUILayout.PropertyField(m_AnimTriggerProperty);
+                    EditorGUILayout.PropertyField(m_PowerfulUI_AnimTriggerProperty);
 
                     if (animator == null || animator.runtimeAnimatorController == null)
                     {
@@ -183,7 +185,7 @@ namespace PowerfulUI
 
         public virtual void OnInspectorGUI_Navigation()
         {
-            EditorGUILayout.PropertyField(m_NavigationProperty);
+            EditorGUILayout.PropertyField(m_PowerfulUI_NavigationProperty);
 
             var showNavigationFieldInfo = typeof(UnityEditor.UI.SelectableEditor).GetField("s_ShowNavigation", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
             var showNavigation = (bool)showNavigationFieldInfo.GetValue(null);
@@ -191,7 +193,7 @@ namespace PowerfulUI
             EditorGUI.BeginChangeCheck();
             Rect toggleRect = EditorGUILayout.GetControlRect();
             toggleRect.xMin += EditorGUIUtility.labelWidth;
-            showNavigation = GUI.Toggle(toggleRect, showNavigation, m_VisualizeNavigation, EditorStyles.miniButton);
+            showNavigation = GUI.Toggle(toggleRect, showNavigation, m_PowerfulUI_VisualizeNavigation, EditorStyles.miniButton);
             showNavigationFieldInfo.SetValue(null, showNavigation);
             if (EditorGUI.EndChangeCheck())
             {
