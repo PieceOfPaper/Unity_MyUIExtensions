@@ -26,15 +26,13 @@ namespace PowerfulUI
 
         // Long Press
         [SerializeField] private bool m_EnableLongPress = false;
-        public bool enableLongPress { get => m_EnableLongPress; set { if (SetPropertyUtility_SetStruct( ref m_EnableLongPress, value)) ResetLongPressState(); } }
+        public bool enableLongPress { get => m_EnableLongPress; set { if (UIUtil.SetStruct( ref m_EnableLongPress, value)) ResetLongPressState(); } }
         [FormerlySerializedAs("onBeginLongPress")] [SerializeField] private UnityEvent m_OnBeginLongPress = new UnityEvent();
         public UnityEvent onBeginLongPress { get => m_OnBeginLongPress; set => m_OnBeginLongPress = value; }
         [FormerlySerializedAs("onEndLongPress")] [SerializeField] private UnityEvent m_OnEndLongPress = new UnityEvent();
         public UnityEvent onEndLongPress { get => m_OnEndLongPress; set => m_OnEndLongPress = value; }
 
 
-        private SelectableTransitionApplier[] m_CachedTransitionApplier;
-        private SelectableColorApplier[] m_CachedColorApplier;
         private int m_LastTransitionState;
         private List<ISelectableTransitionApplier> m_TransitionAppliers = new List<ISelectableTransitionApplier>();
 
@@ -280,16 +278,5 @@ namespace PowerfulUI
         protected virtual void OnProcessBeginLongPress() { }
 
         protected virtual void OnProcessEndLongPress() { }
-
-
-
-        public static bool SetPropertyUtility_SetStruct<T>(ref T currentValue, T newValue) where T : struct
-        {
-            if (EqualityComparer<T>.Default.Equals(currentValue, newValue))
-                return false;
-
-            currentValue = newValue;
-            return true;
-        }
     }
 }

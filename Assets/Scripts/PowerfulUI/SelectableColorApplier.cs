@@ -22,9 +22,9 @@ namespace PowerfulUI
         private Graphic m_TargetGraphic;
         
         
-        public ColorBlock        colors            { get { return m_Colors; } set { if (SetPropertyUtility_SetStruct(ref m_Colors, value))            OnSetProperty(); } }
+        public ColorBlock        colors            { get { return m_Colors; } set { if (UIUtil.SetStruct(ref m_Colors, value))            OnSetProperty(); } }
 
-        public Graphic           targetGraphic     { get { return m_TargetGraphic; } set { if (SetPropertyUtility_SetClass(ref m_TargetGraphic, value))     OnSetProperty(); } }
+        public Graphic           targetGraphic     { get { return m_TargetGraphic; } set { if (UIUtil.SetClass(ref m_TargetGraphic, value))     OnSetProperty(); } }
 
 
         private Selectable m_Selectable;
@@ -150,24 +150,6 @@ namespace PowerfulUI
         private void OnValidate()
         {
             DoStateTransition(m_LastState, true);
-        }
-
-        public static bool SetPropertyUtility_SetStruct<T>(ref T currentValue, T newValue) where T : struct
-        {
-            if (EqualityComparer<T>.Default.Equals(currentValue, newValue))
-                return false;
-
-            currentValue = newValue;
-            return true;
-        }
-        
-        public static bool SetPropertyUtility_SetClass<T>(ref T currentValue, T newValue) where T : class
-        {
-            if ((currentValue == null && newValue == null) || (currentValue != null && currentValue.Equals(newValue)))
-                return false;
-
-            currentValue = newValue;
-            return true;
         }
     }
 
