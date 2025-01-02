@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
 
-namespace Powerful
+namespace PowerfulUI
 {
     [RequireComponent(typeof(RectTransform))]
     public class TabGroup : MonoBehaviour

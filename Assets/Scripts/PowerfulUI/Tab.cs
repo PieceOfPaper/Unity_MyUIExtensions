@@ -7,7 +7,7 @@ using UnityEngine.Pool;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-namespace Powerful
+namespace PowerfulUI
 {
     [RequireComponent(typeof(RectTransform))]
     public class Tab : Selectable

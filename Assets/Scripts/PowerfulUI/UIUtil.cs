@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Powerful
+namespace PowerfulUI
 {
     public static class UIUtil
     {

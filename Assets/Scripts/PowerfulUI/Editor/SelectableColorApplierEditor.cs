@@ -7,7 +7,7 @@ using UnityEditor.AnimatedValues;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Powerful
+namespace PowerfulUI
 {
     [CustomEditor(typeof(SelectableColorApplier), true)]
     [CanEditMultipleObjects]
