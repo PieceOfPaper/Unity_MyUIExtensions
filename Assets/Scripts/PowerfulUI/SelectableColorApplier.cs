@@ -7,7 +7,8 @@ using UnityEngine.UI;
 
 namespace PowerfulUI
 {
-    public class SelectableColorApplier : MonoBehaviour
+    [ExecuteAlways]
+    public class SelectableColorApplier : MonoBehaviour, ISelectableTransitionApplier
     {
         // Colors used for a color tint-based transition.
         [FormerlySerializedAs("colors")]
@@ -26,11 +27,18 @@ namespace PowerfulUI
         public Graphic           targetGraphic     { get { return m_TargetGraphic; } set { if (SetPropertyUtility_SetClass(ref m_TargetGraphic, value))     OnSetProperty(); } }
 
 
+        private Selectable m_Selectable;
         private int m_LastState = 0;
 
         private void OnEnable()
         {
-            DoStateTransition(m_LastState, true);
+            m_Selectable = GetComponentInParent<Selectable>();
+            if (m_Selectable != null) m_Selectable.RegistTransitionApplier(this);
+        }
+
+        private void OnDisable()
+        {
+            if (m_Selectable != null) m_Selectable.UnregistTransitionApplier(this);
         }
         
         private void OnSetProperty()

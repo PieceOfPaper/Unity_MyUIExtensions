@@ -35,6 +35,8 @@ namespace PowerfulUI
 
         private SelectableTransitionApplier[] m_CachedTransitionApplier;
         private SelectableColorApplier[] m_CachedColorApplier;
+        private int m_LastTransitionState;
+        private List<ISelectableTransitionApplier> m_TransitionAppliers = new List<ISelectableTransitionApplier>();
 
 
         private const float LONGPRESS_READY_TIME = 1.0f; //TODO - EventSystem 확장으로 빼면 좋겠다.
@@ -97,24 +99,33 @@ namespace PowerfulUI
             }
         }
 
+
+        public void RegistTransitionApplier(ISelectableTransitionApplier transitionApplier)
+        {
+            if (transitionApplier == null)
+                return;
+            
+            m_TransitionAppliers.Add(transitionApplier);
+            transitionApplier.DoStateTransition(m_LastTransitionState, true);
+        }
+
+        public void UnregistTransitionApplier(ISelectableTransitionApplier transitionApplier)
+        {
+            if (transitionApplier == null)
+                return;
+
+            m_TransitionAppliers.Remove(transitionApplier);
+        }
+        
         protected override void DoStateTransition(SelectionState state, bool instant)
         {
             base.DoStateTransition(state, instant);
 
-            if (Application.isPlaying == false || m_CachedTransitionApplier == null)
-                m_CachedTransitionApplier = GetComponentsInChildren<SelectableTransitionApplier>(true);
-            for (var i = 0; i < m_CachedTransitionApplier.Length; i ++)
+            m_LastTransitionState = (int)state;
+            for (var i = 0; i < m_TransitionAppliers.Count; i ++)
             {
-                if (m_CachedTransitionApplier[i] == null) continue;
-                m_CachedTransitionApplier[i].DoStateTransition((int)state, instant);
-            }
-            
-            if (Application.isPlaying == false || m_CachedColorApplier == null)
-                m_CachedColorApplier = GetComponentsInChildren<SelectableColorApplier>(true);
-            for (var i = 0; i < m_CachedColorApplier.Length; i ++)
-            {
-                if (m_CachedColorApplier[i] == null) continue;
-                m_CachedColorApplier[i].DoStateTransition((int)state, instant);
+                if (m_TransitionAppliers[i] == null) continue;
+                m_TransitionAppliers[i].DoStateTransition(m_LastTransitionState, instant);
             }
         }
 

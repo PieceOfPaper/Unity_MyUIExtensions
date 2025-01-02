@@ -7,7 +7,8 @@ using UnityEngine.UI;
 
 namespace PowerfulUI
 {
-    public class SelectableTransitionApplier : MonoBehaviour
+    [ExecuteAlways]
+    public class SelectableTransitionApplier : MonoBehaviour, ISelectableTransitionApplier
     {
         // Type of the transition that occurs when the button state changes.
         [FormerlySerializedAs("transition")]
@@ -59,13 +60,20 @@ namespace PowerfulUI
         }
 #endif
 
+        private Selectable m_Selectable;
         private int m_LastState = 0;
 
         private void OnEnable()
         {
-            DoStateTransition(m_LastState, true);
+            m_Selectable = GetComponentInParent<Selectable>();
+            if (m_Selectable != null) m_Selectable.RegistTransitionApplier(this);
         }
-        
+
+        private void OnDisable()
+        {
+            if (m_Selectable != null) m_Selectable.UnregistTransitionApplier(this);
+        }
+
         private void OnSetProperty()
         {
 #if UNITY_EDITOR
