@@ -111,6 +111,7 @@ namespace UnityEngine.UI
             m_Tracker.Add(this, rectTransform, DrivenTransformProperties.Anchors);
             m_Tracker.Add(this, rectTransform, DrivenTransformProperties.AnchoredPosition);
             m_Tracker.Add(this, rectTransform, DrivenTransformProperties.SizeDelta);
+            m_Tracker.Add(this, rectTransform, DrivenTransformProperties.Pivot);
 ;
             var scale = m_RootCanvasRectTransform.rect.width / Screen.width;
             var screenSize = new Vector2(Screen.width, Screen.height);
@@ -122,6 +123,7 @@ namespace UnityEngine.UI
             
             rectTransform.anchorMin = Vector2.zero;
             rectTransform.anchorMax = Vector2.one;
+            rectTransform.pivot = Vector2.one * 0.5f;
             rectTransform.anchoredPosition = (safeArea.center - screenSize * 0.5f) * scale;
             rectTransform.sizeDelta = (safeArea.size - screenSize) * scale;
         }
