@@ -43,6 +43,7 @@ namespace UnityEngine.UI
 
         
         private RectTransform m_RootCanvasRectTransform;
+        private RectTransformDimensionsChangeListener m_RootCanvasRectChangeListener;
 
         private Vector2 m_PrevRootCanvasSize;
         private Rect m_PrevSafeArea;
@@ -53,34 +54,43 @@ namespace UnityEngine.UI
         protected override void OnEnable()
         {
             base.OnEnable();
-            var canvas = GetComponentInParent<Canvas>();
-            var rootCanvas = canvas == null ? null : (canvas.isRootCanvas ? canvas : canvas.rootCanvas);
-            m_RootCanvasRectTransform = canvas == null ? null : canvas.transform as RectTransform;
+
+            UpdateRootCanvas();
             SetDirty();
         }
 
         protected override void OnDisable()
         {
+            base.OnDisable();
+            
             m_Tracker.Clear();
             LayoutRebuilder.MarkLayoutForRebuild(rectTransform);
-            base.OnDisable();
+
+            if (m_RootCanvasRectChangeListener != null)
+                m_RootCanvasRectChangeListener.onChange.RemoveListener(OnRectTransformDimensionsChange);
+
+            m_RootCanvasRectTransform = null;
+            m_RootCanvasRectChangeListener = null;
         }
 
         protected override void OnTransformParentChanged()
         {
             base.OnTransformParentChanged();
+            
+            UpdateRootCanvas();
             SetDirty();
         }
 
         protected virtual void Update()
         {
-            if (m_RootCanvasRectTransform != null)
+            if (Application.isPlaying == false)
             {
-                if (m_PrevSafeArea != Screen.safeArea || m_PrevRootCanvasSize != m_RootCanvasRectTransform.sizeDelta)
+                if (m_RootCanvasRectTransform != null)
                 {
-                    m_PrevSafeArea = Screen.safeArea;
-                    m_PrevRootCanvasSize = m_RootCanvasRectTransform.sizeDelta;
-                    m_DelayedSetDirty = true;
+                    if (m_PrevSafeArea != Screen.safeArea || m_PrevRootCanvasSize != m_RootCanvasRectTransform.sizeDelta)
+                    {
+                        m_DelayedSetDirty = true;
+                    }
                 }
             }
             
@@ -93,12 +103,32 @@ namespace UnityEngine.UI
         
         protected override void OnRectTransformDimensionsChange()
         {
-            var canvas = GetComponentInParent<Canvas>();
-            var rootCanvas = canvas == null ? null : (canvas.isRootCanvas ? canvas : canvas.rootCanvas);
-            m_RootCanvasRectTransform = canvas == null ? null : canvas.transform as RectTransform;
             UpdateRect();
         }
 
+        private void UpdateRootCanvas()
+        {
+            if (m_RootCanvasRectChangeListener != null)
+                m_RootCanvasRectChangeListener.onChange.RemoveListener(OnRectTransformDimensionsChange);
+            m_RootCanvasRectChangeListener = null;
+            
+            var canvas = GetComponentInParent<Canvas>();
+            var rootCanvas = canvas == null ? null : (canvas.isRootCanvas ? canvas : canvas.rootCanvas);
+            m_RootCanvasRectTransform = rootCanvas == null ? null : rootCanvas.transform as RectTransform;
+
+            if (Application.isPlaying == true)
+            {
+                if (m_RootCanvasRectTransform != null)
+                {
+                    m_RootCanvasRectChangeListener = m_RootCanvasRectTransform.GetComponent<RectTransformDimensionsChangeListener>();
+                    if (m_RootCanvasRectChangeListener == null)
+                        m_RootCanvasRectChangeListener = m_RootCanvasRectTransform.gameObject.AddComponent<RectTransformDimensionsChangeListener>();
+                
+                    m_RootCanvasRectChangeListener.onChange.AddListener(OnRectTransformDimensionsChange);
+                }
+            }
+        }
+        
         private void UpdateRect()
         {
             if (!IsActive())
@@ -126,6 +156,9 @@ namespace UnityEngine.UI
             rectTransform.pivot = Vector2.one * 0.5f;
             rectTransform.anchoredPosition = (safeArea.center - screenSize * 0.5f) * scale;
             rectTransform.sizeDelta = (safeArea.size - screenSize) * scale;
+            
+            m_PrevSafeArea = Screen.safeArea;
+            m_PrevRootCanvasSize = m_RootCanvasRectTransform.sizeDelta;
         }
 
         public virtual void SetLayoutHorizontal() {}

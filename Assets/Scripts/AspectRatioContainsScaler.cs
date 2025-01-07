@@ -30,6 +30,7 @@ namespace UnityEngine.UI
         private bool m_DelayedSetDirty = false;
 
         private RectTransform m_ParentRectTransform;
+        private RectTransformDimensionsChangeListener m_ParentRectChangeListener;
         private Vector2 m_PrevParentSize = Vector2.zero;
 
         private RectTransform rectTransform
@@ -52,7 +53,7 @@ namespace UnityEngine.UI
         protected override void OnEnable()
         {
             base.OnEnable();
-            m_ParentRectTransform = rectTransform.parent == null ? null : rectTransform.parent as RectTransform;
+            UpdateParent();
             SetDirty();
         }
 
@@ -66,16 +67,23 @@ namespace UnityEngine.UI
 
         protected override void OnDisable()
         {
+            base.OnDisable();
+            
             m_Tracker.Clear();
             LayoutRebuilder.MarkLayoutForRebuild(rectTransform);
-            base.OnDisable();
+            
+            if (m_ParentRectChangeListener != null)
+                m_ParentRectChangeListener.onChange.RemoveListener(OnRectTransformDimensionsChange);
+
+            m_ParentRectTransform = null;
+            m_ParentRectChangeListener = null;
         }
 
         protected override void OnTransformParentChanged()
         {
             base.OnTransformParentChanged();
 
-            m_ParentRectTransform = rectTransform.parent == null ? null : rectTransform.parent as RectTransform;
+            UpdateParent();
             SetDirty();
         }
 
@@ -85,10 +93,13 @@ namespace UnityEngine.UI
         /// </summary>
         protected virtual void Update()
         {
-            if (m_PrevParentSize != GetParentSize())
+            if (Application.isPlaying == false)
             {
-                m_PrevParentSize = GetParentSize();
-                m_DelayedSetDirty = true;
+                if (m_PrevParentSize != GetParentSize())
+                {
+                    m_PrevParentSize = GetParentSize();
+                    m_DelayedSetDirty = true;
+                }
             }
             
             if (m_DelayedSetDirty)
@@ -106,6 +117,28 @@ namespace UnityEngine.UI
             UpdateRect();
         }
 
+
+        private void UpdateParent()
+        {
+            if (m_ParentRectChangeListener != null)
+                m_ParentRectChangeListener.onChange.RemoveListener(OnRectTransformDimensionsChange);
+            m_ParentRectChangeListener = null;
+            
+            m_ParentRectTransform = rectTransform.parent == null ? null : rectTransform.parent as RectTransform;
+
+            if (Application.isPlaying == true)
+            {
+                if (m_ParentRectTransform != null)
+                {
+                    m_ParentRectChangeListener = m_ParentRectTransform.GetComponent<RectTransformDimensionsChangeListener>();
+                    if (m_ParentRectChangeListener == null)
+                        m_ParentRectChangeListener = m_ParentRectTransform.gameObject.AddComponent<RectTransformDimensionsChangeListener>();
+
+                    m_ParentRectChangeListener.onChange.AddListener(OnRectTransformDimensionsChange);
+                }
+            }
+        }
+        
         private void UpdateRect()
         {
             if (!IsActive() || !IsComponentValidOnObject())
