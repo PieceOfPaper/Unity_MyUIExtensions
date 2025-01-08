@@ -13,6 +13,19 @@ namespace TMPro
     {
         [Header("Material")]
         [SerializeField] private Material m_OriginMaterial;
+        public Material originMaterial
+        {
+            get => m_OriginMaterial;
+            set
+            {
+                if (m_OriginMaterial == value)
+                    return;
+
+                m_OriginMaterial = value;
+                ResetMaterial();
+                UpdateMaterial();
+            }
+        }
         
         [Header("Outline")]
         [SerializeField] private bool m_Outline = false;
@@ -62,7 +75,7 @@ namespace TMPro
 
         private void OnDisable()
         {
-            ApplyMaterial(this, m_OriginMaterial, m_GeneratedMaterialData, default);
+            ResetMaterial();
             m_GeneratedMaterialData = default;
         }
 
@@ -73,8 +86,8 @@ namespace TMPro
         
         private void Reset()
         {
-            if (m_OriginMaterial == null)
-                m_OriginMaterial = text.fontSharedMaterial;
+            if (originMaterial == null)
+                originMaterial = text.fontSharedMaterial;
         }
 
 
@@ -83,7 +96,7 @@ namespace TMPro
         
         private void UpdateMaterial()
         {
-            if (m_OriginMaterial == null)
+            if (originMaterial == null)
                 return;
             
             var materialData = new MaterialData()
@@ -100,7 +113,7 @@ namespace TMPro
                 underlayOffsetX = underlay ? underlayOffsetX : (sbyte)0,
                 underlayOffsetY = underlay ? underlayOffsetY : (sbyte)0,
                 underlayDilate = underlay ? underlayDilate : (sbyte)0,
-                underlaySoftness = outline ? underlaySoftness : (byte)0,
+                underlaySoftness = underlay ? underlaySoftness : (byte)0,
             };
 
             if (m_GeneratedMaterialData.Equals(materialData) == true)
@@ -108,17 +121,32 @@ namespace TMPro
 
             if (Application.isPlaying == true)
             {
-                ApplyMaterial(this, m_OriginMaterial, m_GeneratedMaterialData, materialData);
+                ApplyMaterial(this, originMaterial, m_GeneratedMaterialData, materialData);
             }
             else
             {
-                if (m_GeneratedMaterial != null)
-                    DestroyImmediate(m_GeneratedMaterial);
-                m_GeneratedMaterial = GenerateMaterial(m_OriginMaterial, materialData);
+                if (m_GeneratedMaterial == null)
+                    m_GeneratedMaterial = new Material(m_OriginMaterial);
+                SetMaterialParameters(m_GeneratedMaterial, materialData);
                 text.fontMaterial = m_GeneratedMaterial;
             }
             
             m_GeneratedMaterialData = materialData;
+        }
+
+        private void ResetMaterial()
+        {
+            if (Application.isPlaying == true)
+            {
+                ApplyMaterial(this, originMaterial, m_GeneratedMaterialData, default);
+            }
+            
+            if (m_GeneratedMaterial != null)
+            {
+                if (Application.isPlaying) Destroy(m_GeneratedMaterial);
+                else DestroyImmediate(m_GeneratedMaterial);
+                m_GeneratedMaterial = null;
+            }
         }
 
         public struct MaterialData : IEquatable<MaterialData>
@@ -162,9 +190,8 @@ namespace TMPro
 
         private static Dictionary<Material, Dictionary<MaterialData, CachedMaterialData>> s_Materials = new Dictionary<Material, Dictionary<MaterialData, CachedMaterialData>>();
 
-        private static Material GenerateMaterial(Material originMaterial, MaterialData data)
+        private static void SetMaterialParameters(Material mat, MaterialData data)
         {
-            var mat = new Material(originMaterial);
             if (data.outline) mat.EnableKeyword("OUTLINE_ON");
             else mat.DisableKeyword("OUTLINE_ON");
             if (data.outline == true)
@@ -183,6 +210,12 @@ namespace TMPro
                 mat.SetFloat("_UnderlayDilate", data.underlayDilate * 0.01f);
                 mat.SetFloat("_UnderlaySoftness", data.underlaySoftness * 0.01f);
             }
+        }
+        
+        private static Material GenerateMaterial(Material originMaterial, MaterialData data)
+        {
+            var mat = new Material(originMaterial);
+            SetMaterialParameters(mat, data);
             return mat;
         }
         
