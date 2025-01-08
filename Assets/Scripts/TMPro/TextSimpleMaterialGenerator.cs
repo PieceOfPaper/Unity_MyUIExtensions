@@ -17,7 +17,7 @@ namespace TMPro
         [Header("Outline")]
         [SerializeField] private bool m_Outline = false;
         public bool outline { get => m_Outline; set { if (m_Outline != value) { m_Outline = value; UpdateMaterial(); } } }
-        [ColorUsage(true, true)] [SerializeField] private Color m_OutlineColor = new Color(0f, 0f, 0f, 1f);
+        [ColorUsage(true, false)] [SerializeField] private Color32 m_OutlineColor = new Color(0, 0, 0, 255);
         public Color outlineColor { get => m_OutlineColor; set { if (m_OutlineColor != value) { m_OutlineColor = value; UpdateMaterial(); } } }
         [Range(0, 100)] [SerializeField] private byte m_OutlineWidth = 0;
         public byte outlineWidth { get => m_OutlineWidth; set { if (m_OutlineWidth != value) { m_OutlineWidth = value; UpdateMaterial(); } } }
@@ -27,7 +27,7 @@ namespace TMPro
         [Header("Underlay")]
         [SerializeField] private bool m_Underlay = false;
         public bool underlay { get => m_Underlay; set { if (m_Underlay != value) { m_Underlay = value; UpdateMaterial(); } } }
-        [ColorUsage(true, true)] [SerializeField] private Color m_UnderlayColor = new Color(0f, 0f, 0f, 1f);
+        [ColorUsage(true, false)] [SerializeField] private Color32 m_UnderlayColor = new Color32(0, 0, 0, 255);
         public Color underlayColor { get => m_UnderlayColor; set { if (m_UnderlayColor != value) { m_UnderlayColor = value; UpdateMaterial(); } } }
         [Range(-100, 100)] [SerializeField] private sbyte m_UnderlayOffsetX = 0;
         public sbyte underlayOffsetX { get => m_UnderlayOffsetX; set { if (m_UnderlayOffsetX != value) { m_UnderlayOffsetX = value; UpdateMaterial(); } } }
@@ -91,10 +91,12 @@ namespace TMPro
                 isValid = true,
                 
                 outline = outline,
+                outlineColor = outline ? outlineColor : new Color32(0, 0, 0, 255),
                 outlineWidth = outline ? outlineWidth : (byte)0,
                 outlineSoftness = outline ? outlineSoftness : (byte)0,
                 
                 underlay = underlay,
+                underlayColor = underlay ? underlayColor : new Color32(0, 0, 0, 255),
                 underlayOffsetX = underlay ? underlayOffsetX : (sbyte)0,
                 underlayOffsetY = underlay ? underlayOffsetY : (sbyte)0,
                 underlayDilate = underlay ? underlayDilate : (sbyte)0,
@@ -124,10 +126,12 @@ namespace TMPro
             public bool isValid;
             
             public bool outline;
+            public Color32 outlineColor;
             public byte outlineWidth;
             public byte outlineSoftness;
             
             public bool underlay;
+            public Color32 underlayColor;
             public sbyte underlayOffsetX;
             public sbyte underlayOffsetY;
             public sbyte underlayDilate;
@@ -137,9 +141,11 @@ namespace TMPro
             {
                 if (isValid != other.isValid) return false;
                 if (outline != other.outline) return false;
+                if (outlineColor.Equals(other.outlineColor) == false) return false;
                 if (outlineWidth != other.outlineWidth) return false;
                 if (outlineSoftness != other.outlineSoftness) return false;
                 if (underlay != other.underlay) return false;
+                if (underlayColor.Equals(other.underlayColor) == false) return false;
                 if (underlayOffsetX != other.underlayOffsetX) return false;
                 if (underlayOffsetY != other.underlayOffsetY) return false;
                 if (underlayDilate != other.underlayDilate) return false;
@@ -163,7 +169,7 @@ namespace TMPro
             else mat.DisableKeyword("OUTLINE_ON");
             if (data.outline == true)
             {
-                mat.SetColor("_OutlineColor", Color.black);
+                mat.SetColor("_OutlineColor", data.outlineColor);
                 mat.SetFloat("_OutlineWidth", data.outlineWidth * 0.01f);
                 mat.SetFloat("_OutlineSoftness", data.outlineSoftness * 0.01f);
             }
@@ -171,7 +177,7 @@ namespace TMPro
             else mat.DisableKeyword("UNDERLAY_ON");
             if (data.underlay == true)
             {
-                mat.SetColor("_UnderlayColor", Color.black);
+                mat.SetColor("_UnderlayColor", data.underlayColor);
                 mat.SetFloat("_UnderlayOffsetX", data.underlayOffsetX * 0.01f);
                 mat.SetFloat("_UnderlayOffsetY", data.underlayOffsetY * 0.01f);
                 mat.SetFloat("_UnderlayDilate", data.underlayDilate * 0.01f);
