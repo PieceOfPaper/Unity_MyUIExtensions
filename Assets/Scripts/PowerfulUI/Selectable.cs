@@ -9,7 +9,6 @@ using UnityEngine.Serialization;
 
 namespace PowerfulUI
 {
-    [AddComponentMenu("UI/Powerful/Powerful.Selectable", 35)]
     [ExecuteAlways]
     [SelectionBase]
     [DisallowMultipleComponent]
