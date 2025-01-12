@@ -6,7 +6,6 @@ using UnityEngine.EventSystems;
 
 namespace UnityEngine.UI
 {
-    [RequireComponent(typeof(Canvas))]
     [DisallowMultipleComponent]
     [ExecuteAlways]
     public class SyncCanvasSortingOrder : UIBehaviour
@@ -38,27 +37,16 @@ namespace UnityEngine.UI
                 UpdateSortingOrder();
             }
         }
+        [SerializeField] private Renderer[] m_TargetRenderers;
         
         private Canvas m_Canvas;
-        public Canvas canvas
-        {
-            get
-            {
-                if (Application.isPlaying == false)
-                    return GetComponent<Canvas>();
-
-                if (m_Canvas == null)
-                    m_Canvas = GetComponent<Canvas>();
-                return m_Canvas;
-            }
-        }
-
         private Canvas m_TargetCanvas;
         private CanvasSortingOrderChangeListener m_TargetCanvasSortingOrderListener;
 
         protected override void OnEnable()
         {
             base.OnEnable();
+            m_Canvas = GetComponent<Canvas>();
             UpdateTargetCanvas();
             UpdateSortingOrder();
         }
@@ -108,9 +96,17 @@ namespace UnityEngine.UI
 
             if (m_SyncRoot == true)
             {
-                if (canvas.isRootCanvas == false)
+                if (m_Canvas != null)
                 {
-                    m_TargetCanvas = canvas.rootCanvas;
+                    m_TargetCanvas = m_Canvas.rootCanvas;
+                }
+                else
+                {
+                    var parentCanvas = transform.GetComponentInParent<Canvas>();
+                    if (parentCanvas != null && parentCanvas.isRootCanvas == false)
+                    {
+                        m_TargetCanvas = parentCanvas.rootCanvas;
+                    }
                 }
             }
             else
@@ -132,8 +128,50 @@ namespace UnityEngine.UI
 
         private void UpdateSortingOrder()
         {
-            canvas.sortingOrder = (m_TargetCanvas == null ? 0 : m_TargetCanvas.sortingOrder) + m_AddSortingOrder;
+            if (Application.isPlaying == false)
+                m_Canvas = GetComponent<Canvas>();
+            
+            var sortingOrder = (m_TargetCanvas == null ? 0 : m_TargetCanvas.sortingOrder) + m_AddSortingOrder;
+            if (m_Canvas != null) m_Canvas.sortingOrder = sortingOrder;
+            if (m_TargetRenderers != null)
+            {
+                for (var i = 0; i < m_TargetRenderers.Length; i ++)
+                {
+                    if (m_TargetRenderers[i] == null) continue;
+                    m_TargetRenderers[i].sortingOrder = sortingOrder;
+                }
+            }
         }
+        
+        
+#if UNITY_EDITOR
+        [ContextMenu("Regist Renderers")]
+        private void ContextMenu_RegistRenderers()
+        {
+            var list = new List<Renderer>(m_TargetRenderers);
+            for (var i = 0; i < list.Count; i ++)
+            {
+                if (list[i] == null)
+                {
+                    list.RemoveAt(i);
+                    i --;
+                }
+            }
+            
+            var renderers = GetComponentsInChildren<Renderer>(true);
+            foreach (var renderer in renderers)
+            {
+                if (renderer == null) continue;
+                if (list.Contains(renderer) == true) continue;
+
+                var script = renderer.GetComponentInParent<SyncCanvasSortingOrder>();
+                if (script != this) continue;
+                
+                list.Add(renderer);
+            }
+            m_TargetRenderers = list.ToArray();
+        }
+#endif
 
     }
 }
