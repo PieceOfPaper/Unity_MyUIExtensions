@@ -49,8 +49,17 @@ namespace UnityEngine.UI
 
         public override void OnInspectorGUI()
         {
+            var openHandler = target as OpenHandler;
+            
             using (new EditorGUI.DisabledScope(true))
                 EditorGUILayout.PropertyField(m_Script);
+
+            if (targets.Length == 1)
+            {
+                EditorGUILayout.Space();
+                using (new EditorGUI.DisabledScope(true))
+                    EditorGUILayout.EnumPopup("State", openHandler.state);
+            }
             
             serializedObject.Update();
             EditorGUILayout.Space();
@@ -71,13 +80,12 @@ namespace UnityEngine.UI
                 }
                 else
                 {
-                    var script = target as OpenHandler;
-                    var controller = script.animator.runtimeAnimatorController as AnimatorController;
+                    var controller = openHandler.animator.runtimeAnimatorController as AnimatorController;
                     
                     m_AnimatorStateList.Clear();
                     m_AnimatorLayerList.AddRange(controller.layers.Select(_ => _.name));
                     var animatorLayers = m_AnimatorLayerList.ToArray();
-                    var layerIndex = System.Array.IndexOf(animatorLayers, script.animatorLayer);
+                    var layerIndex = System.Array.IndexOf(animatorLayers, openHandler.animatorLayer);
                     var newLayerIndex = EditorGUILayout.Popup("Layer", layerIndex, animatorLayers);
                     if (layerIndex != newLayerIndex)
                         m_AnimatorLayer.stringValue = newLayerIndex < 0 || newLayerIndex >= animatorLayers.Length ? string.Empty : animatorLayers[newLayerIndex];
@@ -87,11 +95,11 @@ namespace UnityEngine.UI
                         m_AnimatorStateList.AddRange(controller.layers[newLayerIndex].stateMachine.states.Select(_ => _.state.name));
                     
                     var animatorStates = m_AnimatorStateList.ToArray();
-                    var openStateIndex = System.Array.IndexOf(animatorStates, script.animatorOpenState);
+                    var openStateIndex = System.Array.IndexOf(animatorStates, openHandler.animatorOpenState);
                     var newOpenStateIndex = EditorGUILayout.Popup("Open State", openStateIndex, animatorStates);
                     if (openStateIndex != newOpenStateIndex)
                         m_AnimatorOpenState.stringValue = newOpenStateIndex < 0 || newOpenStateIndex >= animatorStates.Length ? string.Empty : animatorStates[newOpenStateIndex];
-                    var closeStateIndex = System.Array.IndexOf(animatorStates, script.animatorCloseState);
+                    var closeStateIndex = System.Array.IndexOf(animatorStates, openHandler.animatorCloseState);
                     var newCloseStateIndex = EditorGUILayout.Popup("Close State", closeStateIndex, animatorStates);
                     if (closeStateIndex != newCloseStateIndex)
                         m_AnimatorCloseState.stringValue = newCloseStateIndex < 0 || newCloseStateIndex >= animatorStates.Length ? string.Empty : animatorStates[newCloseStateIndex];
