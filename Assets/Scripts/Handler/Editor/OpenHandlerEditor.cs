@@ -102,8 +102,8 @@ namespace UnityEngine.UI
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Settings", EditorStyles.boldLabel);
             EditorGUI.indentLevel ++;
-            EditorGUILayout.PropertyField(m_MinimumDuration);
-            EditorGUILayout.PropertyField(m_MinimumUnscaledDuration);
+            EditorGUILayout.PropertyField(m_MinimumDuration, new GUIContent("Min Duration"));
+            EditorGUILayout.PropertyField(m_MinimumUnscaledDuration, new GUIContent("Min Unscaled Duration"));
             EditorGUILayout.PropertyField(m_AutoDisableAnimator);
             EditorGUILayout.PropertyField(m_OpenOnStart);
             EditorGUILayout.PropertyField(m_ControlActive);
