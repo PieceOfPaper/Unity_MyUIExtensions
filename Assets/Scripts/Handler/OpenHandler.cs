@@ -8,25 +8,25 @@ namespace UnityEngine.UI
     public class OpenHandler : MonoBehaviour
     {
         [SerializeField] private Animator m_Animator;
+        [SerializeField] private string m_AnimatorLayer = "Base Layer";
         [SerializeField] private string m_AnimatorOpenState = "Open";
         [SerializeField] private string m_AnimatorCloseState = "Close";
-        [SerializeField] private int m_AnimatorLayer = 0;
 
         public Animator animator => m_Animator;
+        public string animatorLayer => m_AnimatorLayer;
         public string animatorOpenState => m_AnimatorOpenState;
         public string animatorCloseState => m_AnimatorCloseState;
-        public int animatorLayer => m_AnimatorLayer;
-
-
-        public ChangeStateEvent onChangeState = new ChangeStateEvent();
-        [System.Serializable] public class ChangeStateEvent : UnityEvent<State> { }
-
+        
+        
         public float minimumDuration = 0f;
         public float minimumUnscaledDuration = 0f;
         public bool autoDisableAnimator = true;
         public bool openOnStart = false;
         public bool controlActive = true;
 
+
+        public ChangeStateEvent onChangeState = new ChangeStateEvent();
+        [System.Serializable] public class ChangeStateEvent : UnityEvent<State> { }
         
         
         public enum State
@@ -58,6 +58,7 @@ namespace UnityEngine.UI
 
         private int m_AnimatorOpenStateHash = 0;
         private int m_AnimatorCloseStateHash = 0;
+        private int m_AnimatorLayerIndex = 0;
 
         private Coroutine m_WaitEndRoutine;
         
@@ -67,6 +68,7 @@ namespace UnityEngine.UI
             if (m_Animator != null && autoDisableAnimator == true) m_Animator.enabled = false;
             m_AnimatorOpenStateHash = Animator.StringToHash(m_AnimatorOpenState);
             m_AnimatorCloseStateHash = Animator.StringToHash(m_AnimatorCloseState);
+            m_AnimatorLayerIndex = m_Animator == null ? 0 : m_Animator.GetLayerIndex(m_AnimatorLayer);
         }
         
         private void OnEnable()
@@ -119,7 +121,7 @@ namespace UnityEngine.UI
                 if (autoDisableAnimator == true)
                     m_Animator.enabled = true;
                 if (m_Animator.enabled == true)
-                    m_Animator.Play(m_AnimatorOpenStateHash, m_AnimatorLayer);
+                    m_Animator.Play(m_AnimatorOpenStateHash, m_AnimatorLayerIndex);
             }
             
             state = State.Opening;
@@ -156,7 +158,7 @@ namespace UnityEngine.UI
                 if (autoDisableAnimator == true)
                     m_Animator.enabled = true;
                 if (m_Animator.enabled == true)
-                    m_Animator.Play(m_AnimatorCloseStateHash, m_AnimatorLayer);
+                    m_Animator.Play(m_AnimatorCloseStateHash, m_AnimatorLayerIndex);
             }
             
             state = State.Closing;
@@ -202,7 +204,7 @@ namespace UnityEngine.UI
                 ((state == State.Opening && m_AnimatorOpenStateHash != 0) || (state == State.Closing && m_AnimatorCloseStateHash != 0)))
             {
                 yield return null;
-                var stateInfo = m_Animator.GetCurrentAnimatorStateInfo(m_AnimatorLayer);
+                var stateInfo = m_Animator.GetCurrentAnimatorStateInfo(m_AnimatorLayerIndex);
                 if (stateInfo.loop == false)
                 {
                     switch (m_Animator.updateMode)
