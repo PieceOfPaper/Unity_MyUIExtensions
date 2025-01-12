@@ -7,6 +7,7 @@ Shader "UI/Blur"
         
         _BlurSize ("Blur Size", Float) = 0.005
         _BlurSampling ("Blur Sampling", Float) = 4
+        _ColorFill ("Color Fill", Float) = 0
 
         _StencilComp ("Stencil Comparison", Float) = 8
         _Stencil ("Stencil ID", Float) = 0
@@ -83,6 +84,7 @@ Shader "UI/Blur"
             fixed4 _Color;
             float _BlurSize;
             int _BlurSampling;
+            float _ColorFill;
             fixed4 _TextureSampleAdd;
             float4 _ClipRect;
             float4 _MainTex_ST;
@@ -142,6 +144,13 @@ Shader "UI/Blur"
                 }
                 color /= totalWeight;
                 color = IN.color * (color + _TextureSampleAdd);
+                
+                if (_ColorFill > 0)
+                {
+                    float4 fillColor = IN.color;
+                    fillColor.a = color.a;
+                    color = lerp(color, fillColor, _ColorFill);
+                }
 
 
                 #ifdef UNITY_UI_CLIP_RECT
