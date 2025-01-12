@@ -9,6 +9,7 @@ namespace UnityEngine.UI
     public class GraphicVertexGizmos : BaseMeshEffect
     {
         public Color gizmosColor = Color.green;
+        public float sphereRadius = 2.0f;
 
         private readonly List<UIVertex> m_Vertices = new List<UIVertex>();
 
@@ -29,7 +30,7 @@ namespace UnityEngine.UI
             for (var verIdx = 0; verIdx < m_Vertices.Count; verIdx ++)
             {
                 var v = m_Vertices[verIdx].position;
-                Gizmos.DrawSphere(v, 2.0f);
+                Gizmos.DrawSphere(v, sphereRadius);
             }
             var triCnt = m_Vertices.Count / 3;
             for (var triIdx = 0; triIdx < triCnt; triIdx ++)
