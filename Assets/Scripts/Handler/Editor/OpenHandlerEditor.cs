@@ -28,6 +28,7 @@ namespace UnityEngine.UI
         private SerializedProperty m_AutoDisableAnimator;
         private SerializedProperty m_OpenOnStart;
         private SerializedProperty m_ControlActive;
+        private SerializedProperty m_ReverseOpenTweenOnClose;
         
         private SerializedProperty m_OnChangeState;
 
@@ -53,6 +54,7 @@ namespace UnityEngine.UI
             m_AutoDisableAnimator = serializedObject.FindProperty("autoDisableAnimator");
             m_OpenOnStart = serializedObject.FindProperty("openOnStart");
             m_ControlActive = serializedObject.FindProperty("controlActive");
+            m_ReverseOpenTweenOnClose = serializedObject.FindProperty("reverseOpenTweenOnClose");
             
             m_OnChangeState = serializedObject.FindProperty("onChangeState");
         }
@@ -145,6 +147,7 @@ namespace UnityEngine.UI
             EditorGUILayout.PropertyField(m_AutoDisableAnimator);
             EditorGUILayout.PropertyField(m_OpenOnStart);
             EditorGUILayout.PropertyField(m_ControlActive);
+            EditorGUILayout.PropertyField(m_ReverseOpenTweenOnClose);
             EditorGUI.indentLevel --;
             
             EditorGUILayout.Space();
