@@ -44,8 +44,8 @@ namespace UnityEngine.UI
             m_AnimatorLayer = serializedObject.FindProperty("m_AnimatorLayer");
             
 #if DOTWEEN
-            m_DoTweenAnimOpen = serializedObject.FindProperty("m_DoTweenAnimOpen");
-            m_DoTweenAnimClose = serializedObject.FindProperty("m_DoTweenAnimClose");
+            m_DoTweenAnimOpen = serializedObject.FindProperty("doTweenAnimOpen");
+            m_DoTweenAnimClose = serializedObject.FindProperty("doTweenAnimClose");
 #endif
             
             m_MinimumDuration = serializedObject.FindProperty("minimumDuration");
@@ -64,6 +64,17 @@ namespace UnityEngine.UI
             using (new EditorGUI.DisabledScope(true))
                 EditorGUILayout.PropertyField(m_Script);
 
+            if (targets.Length == 1)
+            {
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    GUILayout.FlexibleSpace();
+                    using (new EditorGUI.DisabledScope(EditorApplication.isPlayingOrWillChangePlaymode == true))
+                        if (GUILayout.Button("Regist Editor"))
+                            OpenHandlerRegistEditor.Open(openHandler);
+                }
+            }
+            
             if (targets.Length == 1)
             {
                 EditorGUILayout.Space();
