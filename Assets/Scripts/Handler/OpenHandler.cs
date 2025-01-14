@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -18,11 +19,18 @@ namespace UnityEngine.UI
         public string animatorCloseState => m_AnimatorCloseState;
         
         
+#if DOTWEEN
+        [SerializeField] private DG.Tweening.DOTweenAnimation[] m_DoTweenAnimOpen;
+        [SerializeField] private DG.Tweening.DOTweenAnimation[] m_DoTweenAnimClose;
+#endif
+        
+        
         public float minimumDuration = 0f;
         public float minimumUnscaledDuration = 0f;
         public bool autoDisableAnimator = true;
         public bool openOnStart = false;
         public bool controlActive = true;
+        public bool reverseOpenTweenOnClose = false;
 
 
         public ChangeStateEvent onChangeState = new ChangeStateEvent();
@@ -69,6 +77,25 @@ namespace UnityEngine.UI
             m_AnimatorOpenStateHash = Animator.StringToHash(m_AnimatorOpenState);
             m_AnimatorCloseStateHash = Animator.StringToHash(m_AnimatorCloseState);
             m_AnimatorLayerIndex = m_Animator == null ? 0 : m_Animator.GetLayerIndex(m_AnimatorLayer);
+
+#if DOTWEEN
+            foreach (var tweenAnim in m_DoTweenAnimOpen)
+            {
+                if (tweenAnim == null) continue;
+                tweenAnim.autoPlay = false;
+                tweenAnim.autoGenerate = false;
+                tweenAnim.autoKill = false;
+                tweenAnim.RecreateTween();
+            }
+            foreach (var tweenAnim in m_DoTweenAnimClose)
+            {
+                if (tweenAnim == null) continue;
+                tweenAnim.autoPlay = false;
+                tweenAnim.autoGenerate = false;
+                tweenAnim.autoKill = false;
+                tweenAnim.RecreateTween();
+            }
+#endif
         }
         
         private void OnEnable()
@@ -124,6 +151,15 @@ namespace UnityEngine.UI
                     m_Animator.Play(m_AnimatorOpenStateHash, m_AnimatorLayerIndex);
             }
             
+#if DOTWEEN
+            foreach (var tweenAnim in m_DoTweenAnimOpen)
+            {
+                if (tweenAnim == null) continue;
+                tweenAnim.DORewind();
+                tweenAnim.DOPlayForward();
+            }
+#endif
+            
             state = State.Opening;
             if (m_WaitEndRoutine != null) StopCoroutine(m_WaitEndRoutine);
             m_WaitEndRoutine = StartCoroutine(WaitEndRoutine());
@@ -132,6 +168,7 @@ namespace UnityEngine.UI
         private void OnEndOpen()
         {
             if (m_Animator != null && autoDisableAnimator == true) m_Animator.enabled = false;
+            
             state = State.Opened;
         }
         
@@ -160,6 +197,23 @@ namespace UnityEngine.UI
                 if (m_Animator.enabled == true)
                     m_Animator.Play(m_AnimatorCloseStateHash, m_AnimatorLayerIndex);
             }
+            
+#if DOTWEEN
+            if (reverseOpenTweenOnClose == true)
+            {
+                foreach (var tweenAnim in m_DoTweenAnimOpen)
+                {
+                    if (tweenAnim == null) continue;
+                    tweenAnim.DOPlayBackwards();
+                }
+            }
+            foreach (var tweenAnim in m_DoTweenAnimClose)
+            {
+                if (tweenAnim == null) continue;
+                tweenAnim.DORewind();
+                tweenAnim.DOPlayForward();
+            }
+#endif
             
             state = State.Closing;
             if (m_WaitEndRoutine != null) StopCoroutine(m_WaitEndRoutine);
@@ -218,6 +272,43 @@ namespace UnityEngine.UI
                     }
                 }
             }
+            
+#if DOTWEEN
+            switch (state)
+            {
+                case State.Opening:
+                    foreach (var tweenAnim in m_DoTweenAnimOpen)
+                    {
+                        if (tweenAnim == null) continue;
+                        if (tweenAnim.isIndependentUpdate)
+                            unscaledDuration = Mathf.Max(unscaledDuration, tweenAnim.delay + tweenAnim.duration * tweenAnim.loops);
+                        else
+                            duration = Mathf.Max(duration, tweenAnim.delay + tweenAnim.duration * tweenAnim.loops);
+                    }
+                    break;
+                case State.Closing:
+                    if (reverseOpenTweenOnClose == true)
+                    {
+                        foreach (var tweenAnim in m_DoTweenAnimOpen)
+                        {
+                            if (tweenAnim == null) continue;
+                            if (tweenAnim.isIndependentUpdate)
+                                unscaledDuration = Mathf.Max(unscaledDuration, tweenAnim.delay + tweenAnim.duration * tweenAnim.loops);
+                            else
+                                duration = Mathf.Max(duration, tweenAnim.delay + tweenAnim.duration * tweenAnim.loops);
+                        }
+                    }
+                    foreach (var tweenAnim in m_DoTweenAnimClose)
+                    {
+                        if (tweenAnim == null) continue;
+                        if (tweenAnim.isIndependentUpdate)
+                            unscaledDuration = Mathf.Max(unscaledDuration, tweenAnim.delay + tweenAnim.duration * tweenAnim.loops);
+                        else
+                            duration = Mathf.Max(duration, tweenAnim.delay + tweenAnim.duration * tweenAnim.loops);
+                    }
+                    break;
+            }
+#endif
 
             var startTime = Time.time;
             var startUnscaledTime = Time.unscaledTime;

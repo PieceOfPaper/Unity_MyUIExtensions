@@ -18,6 +18,11 @@ namespace UnityEngine.UI
         private SerializedProperty m_AnimatorCloseState;
         private SerializedProperty m_AnimatorLayer;
         
+#if DOTWEEN
+        private SerializedProperty m_DoTweenAnimOpen;
+        private SerializedProperty m_DoTweenAnimClose;
+#endif
+        
         private SerializedProperty m_MinimumDuration;
         private SerializedProperty m_MinimumUnscaledDuration;
         private SerializedProperty m_AutoDisableAnimator;
@@ -37,6 +42,11 @@ namespace UnityEngine.UI
             m_AnimatorOpenState = serializedObject.FindProperty("m_AnimatorOpenState");
             m_AnimatorCloseState = serializedObject.FindProperty("m_AnimatorCloseState");
             m_AnimatorLayer = serializedObject.FindProperty("m_AnimatorLayer");
+            
+#if DOTWEEN
+            m_DoTweenAnimOpen = serializedObject.FindProperty("m_DoTweenAnimOpen");
+            m_DoTweenAnimClose = serializedObject.FindProperty("m_DoTweenAnimClose");
+#endif
             
             m_MinimumDuration = serializedObject.FindProperty("minimumDuration");
             m_MinimumUnscaledDuration = serializedObject.FindProperty("minimumUnscaledDuration");
@@ -106,6 +116,15 @@ namespace UnityEngine.UI
                 }
             }
             EditorGUI.indentLevel --;
+            
+#if DOTWEEN
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("DOTweens", EditorStyles.boldLabel);
+            EditorGUI.indentLevel ++;
+            EditorGUILayout.PropertyField(m_DoTweenAnimOpen, new GUIContent("Open"));
+            EditorGUILayout.PropertyField(m_DoTweenAnimClose, new GUIContent("Close"));
+            EditorGUI.indentLevel --;
+#endif
             
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Settings", EditorStyles.boldLabel);
