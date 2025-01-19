@@ -85,6 +85,8 @@ namespace UnityEngine.UI
 
         public ChangeStateEvent onChangeState = new ChangeStateEvent();
         [System.Serializable] public class ChangeStateEvent : UnityEvent<State> { }
+        public UnityEvent onOpen = new UnityEvent();
+        public UnityEvent onClose = new UnityEvent();
         
         
         public enum State
@@ -220,6 +222,7 @@ namespace UnityEngine.UI
             if (m_Animator != null && autoDisableAnimator == true) m_Animator.enabled = false;
             
             state = State.Opened;
+            onOpen.Invoke();
         }
         
         
@@ -274,8 +277,11 @@ namespace UnityEngine.UI
         {
             if (controlActive == true)
                 gameObject.SetActive(false);
+            
             if (m_Animator != null && autoDisableAnimator == true) m_Animator.enabled = false;
+            
             state = State.Closed;
+            onClose.Invoke();
         }
 
 

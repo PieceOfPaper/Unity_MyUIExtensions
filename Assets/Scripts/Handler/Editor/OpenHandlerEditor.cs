@@ -31,6 +31,8 @@ namespace UnityEngine.UI
         private SerializedProperty m_ReverseOpenTweenOnClose;
         
         private SerializedProperty m_OnChangeState;
+        private SerializedProperty m_OnOpen;
+        private SerializedProperty m_OnClose;
 
         private List<string> m_AnimatorLayerList = new List<string>();
         private List<string> m_AnimatorStateList = new List<string>();
@@ -57,6 +59,8 @@ namespace UnityEngine.UI
             m_ReverseOpenTweenOnClose = serializedObject.FindProperty("reverseOpenTweenOnClose");
             
             m_OnChangeState = serializedObject.FindProperty("onChangeState");
+            m_OnOpen = serializedObject.FindProperty("onOpen");
+            m_OnClose = serializedObject.FindProperty("onClose");
         }
 
         public override void OnInspectorGUI()
@@ -154,6 +158,8 @@ namespace UnityEngine.UI
             EditorGUILayout.LabelField("Events", EditorStyles.boldLabel);
             EditorGUI.indentLevel ++;
             EditorGUILayout.PropertyField(m_OnChangeState);
+            EditorGUILayout.PropertyField(m_OnOpen);
+            EditorGUILayout.PropertyField(m_OnClose);
             EditorGUI.indentLevel --;
             
             serializedObject.ApplyModifiedProperties();
