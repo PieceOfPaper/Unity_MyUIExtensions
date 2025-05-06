@@ -15,6 +15,8 @@ namespace PowerfulMVP
     {
         private bool m_IsInitialized;
         public bool IsInitialized => m_IsInitialized;
+
+        private string m_LogPrefix;
         
         
         private Setting m_Setting;
@@ -54,6 +56,8 @@ namespace PowerfulMVP
 
         public void Initialize(Setting setting, UIFactoryBase factory)
         {
+            m_LogPrefix = GetType().FullName;
+            
             m_Setting = setting;
             if (m_Setting == null) m_Setting = ScriptableObject.CreateInstance<Setting>();
 
@@ -114,7 +118,7 @@ namespace PowerfulMVP
                 touchBlockGraphicRaycaster.blockingObjects = setting.defaultGraphicRaycaster.blockingObjects;
                 touchBlockGraphicRaycaster.blockingMask = setting.defaultGraphicRaycaster.blockingMask;
             }
-            var touchBlockImgObj = new GameObject("Block");
+            var touchBlockImgObj = new GameObject("block");
             touchBlockImgObj.transform.SetParent(touchBlockTransform);
             var touchBlockImgTransform = touchBlockImgObj.AddComponent<RectTransform>();
             touchBlockImgTransform.anchorMin = Vector2.zero;;
@@ -139,13 +143,13 @@ namespace PowerfulMVP
         {
             if (string.IsNullOrWhiteSpace(ui_name))
             {
-                Debug.LogError("UI Name NULL");
+                Debug.LogError($"[{m_LogPrefix}] Invalid ui name");
                 return;
             }
 
             if (m_OpeningPresenters.ContainsKey(ui_name))
             {
-                Debug.LogError("이미 열리는 중.");
+                Debug.LogError($"[{m_LogPrefix}] Is already opening - {ui_name}");
                 return;
             }
 
@@ -156,6 +160,7 @@ namespace PowerfulMVP
                 m_ClosingPresenters.Remove(ui_name);
             }
 
+            Debug.Log($"[{m_LogPrefix}] Open - {ui_name}");
             m_OpeningPresenters[ui_name] = StartCoroutine(OpenRoutine(ui_name));
             
             UpdateTouchBlock();
@@ -170,13 +175,13 @@ namespace PowerfulMVP
         {
             if (string.IsNullOrWhiteSpace(ui_name))
             {
-                Debug.LogError("UI Name NULL");
+                Debug.LogError($"[{m_LogPrefix}] Invalid ui name");
                 return;
             }
 
             if (m_ClosingPresenters.ContainsKey(ui_name))
             {
-                Debug.LogError("이미 닫히는 중.");
+                Debug.LogError($"[{m_LogPrefix}] Is already closing - {ui_name}");
                 return;
             }
 
@@ -186,6 +191,7 @@ namespace PowerfulMVP
                 m_OpeningPresenters.Remove(ui_name);
             }
 
+            Debug.Log($"[{m_LogPrefix}] Close - {ui_name}");
             m_ClosingPresenters[ui_name] = StartCoroutine(CloseRoutine(ui_name));
             
             UpdateTouchBlock();
@@ -230,6 +236,7 @@ namespace PowerfulMVP
         
         private IEnumerator LoadRoutine(string ui_name)
         {
+            Debug.Log($"[{m_LogPrefix}] Load - {ui_name}");
             GameObject prefab = null;
             
             if (m_UIFactory != null)
@@ -239,8 +246,7 @@ namespace PowerfulMVP
             
             if (prefab == null)
             {
-                //TODO - 강제종료
-                Debug.LogError("프리팹 로드 실패!");
+                Debug.LogError($"[{m_LogPrefix}] Load Failed - {ui_name}");
                 yield break;
             }
 
@@ -263,7 +269,7 @@ namespace PowerfulMVP
             var presenter = obj.GetComponent<Presenter>();
             if (presenter == null)
             {
-                //TODO - 강제종료
+                Debug.LogError($"[{m_LogPrefix}] Not Found Presenter Script - {ui_name}");
                 yield break;
             }
                 
@@ -289,6 +295,7 @@ namespace PowerfulMVP
             if (presenter == null)
             {
                 m_OpeningPresenters.Remove(ui_name);
+                UpdateTouchBlock();
                 yield break;
             }
             
@@ -319,6 +326,7 @@ namespace PowerfulMVP
             if (presenter == null)
             {
                 m_ClosingPresenters.Remove(ui_name);
+                UpdateTouchBlock();
                 yield break;
             }
             
