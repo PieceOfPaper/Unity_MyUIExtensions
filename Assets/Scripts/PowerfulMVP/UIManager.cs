@@ -31,7 +31,7 @@ namespace PowerfulMVP
         public EventSystem eventSystem => m_EventSystem;
         
 
-        private readonly Dictionary<int, Transform> m_DepthParents = new Dictionary<int, Transform>();
+        private readonly Dictionary<int, Transform> m_DepthGroupParents = new Dictionary<int, Transform>();
         
         private readonly Dictionary<string, Presenter> m_Presenters = new Dictionary<string, Presenter>();
         private readonly Dictionary<string, Presenter.Setting> m_PresenterSettings = new Dictionary<string, Presenter.Setting>();
@@ -56,44 +56,51 @@ namespace PowerfulMVP
 
         public void Initialize(Setting setting, UIFactoryBase factory)
         {
-            m_LogPrefix = GetType().FullName;
+            if (setting == null) setting = ScriptableObject.CreateInstance<Setting>();
             
+            // 기본 설정
+            m_LogPrefix = GetType().FullName;
             m_Setting = setting;
-            if (m_Setting == null) m_Setting = ScriptableObject.CreateInstance<Setting>();
-
             m_UIFactory = factory;
 
+            
+            // Camera
             if (setting.cameraPrefab != null)
             {
                 var obj = GameObject.Instantiate(setting.cameraPrefab, transform);
                 m_Camera = obj.GetComponent<Camera>();
             }
             
+            // EventSystem
             if (setting.EventSystemPrefab != null)
             {
                 var obj = GameObject.Instantiate(setting.EventSystemPrefab, transform);
                 m_EventSystem = obj.GetComponent<EventSystem>();
             }
 
-            if (setting.depthSettings != null)
+            
+            //뎁스 부모 설정
+            if (setting.depthGroupSettings != null)
             {
-                for (var i = 0; i < setting.depthSettings.Length; i ++)
+                for (var i = 0; i < setting.depthGroupSettings.Length; i ++)
                 {
-                    var depthSetting = setting.depthSettings[i];
+                    var depthSetting = setting.depthGroupSettings[i];
                 
-                    var depthObj = new GameObject(string.IsNullOrWhiteSpace(depthSetting.name) ? depthSetting.depthID.ToString() : depthSetting.name);
+                    var depthObj = new GameObject(string.IsNullOrWhiteSpace(depthSetting.name) ? depthSetting.depthGroupID.ToString() : depthSetting.name);
                     var depthTransform = depthObj.transform;
                     depthTransform.SetParent(transform);
                     depthTransform.localPosition = Vector3.zero;
                     depthTransform.localRotation = Quaternion.identity;
                     depthTransform.localScale = Vector3.one;
                     depthTransform.SetAsLastSibling();
-                    m_DepthParents[depthSetting.depthID] = depthTransform;
+                    m_DepthGroupParents[depthSetting.depthGroupID] = depthTransform;
                 }
             }
 
+            //Touch Block 생성
             m_TouchBlock = new GameObject("TouchBlock");
             m_TouchBlock.transform.SetParent(transform);
+            
             var touchBlockTransform = m_TouchBlock.AddComponent<RectTransform>();
             touchBlockTransform.anchorMin = Vector2.zero;;
             touchBlockTransform.anchorMax = Vector2.one;;
@@ -101,6 +108,7 @@ namespace PowerfulMVP
             touchBlockTransform.localRotation = Quaternion.identity;
             touchBlockTransform.localScale = Vector3.one;
             touchBlockTransform.SetAsLastSibling();
+            
             var touchBlockCanvas = m_TouchBlock.AddComponent<Canvas>();
             if (setting.defaultCanvas != null)
             {
@@ -110,7 +118,8 @@ namespace PowerfulMVP
                 touchBlockCanvas.additionalShaderChannels = setting.defaultCanvas.additionalShaderChannels;
                 touchBlockCanvas.vertexColorAlwaysGammaSpace = setting.defaultCanvas.vertexColorAlwaysGammaSpace;
             }
-            touchBlockCanvas.sortingOrder = (setting.GetDepthIndexLength() + 1) * setting.sortingOrderPerDepth;
+            touchBlockCanvas.sortingOrder = (setting.GetDepthGroupIndexLength() + 1) * setting.sortingOrderPerDepthGroup;
+            
             var touchBlockGraphicRaycaster = m_TouchBlock.AddComponent<GraphicRaycaster>();
             if (setting.defaultGraphicRaycaster != null)
             {
@@ -118,6 +127,7 @@ namespace PowerfulMVP
                 touchBlockGraphicRaycaster.blockingObjects = setting.defaultGraphicRaycaster.blockingObjects;
                 touchBlockGraphicRaycaster.blockingMask = setting.defaultGraphicRaycaster.blockingMask;
             }
+            
             var touchBlockImgObj = new GameObject("block");
             touchBlockImgObj.transform.SetParent(touchBlockTransform);
             var touchBlockImgTransform = touchBlockImgObj.AddComponent<RectTransform>();
@@ -137,7 +147,7 @@ namespace PowerfulMVP
 
         public void Open<T>() where T : Presenter => Open(typeof(T));
 
-        public void Open(System.Type type) => Open(type == null ? null : type.Name);
+        public void Open(System.Type type) => Open(type?.Name);
 
         public void Open(string ui_name)
         {
@@ -162,14 +172,12 @@ namespace PowerfulMVP
 
             Debug.Log($"[{m_LogPrefix}] Open - {ui_name}");
             m_OpeningPresenters[ui_name] = StartCoroutine(OpenRoutine(ui_name));
-            
-            UpdateTouchBlock();
         }
         
         
         public void Close<T>() where T : Presenter => Close(typeof(T));
 
-        public void Close(System.Type type) => Close(type == null ? null : type.Name);
+        public void Close(System.Type type) => Close(type?.Name);
 
         public void Close(string ui_name)
         {
@@ -193,8 +201,6 @@ namespace PowerfulMVP
 
             Debug.Log($"[{m_LogPrefix}] Close - {ui_name}");
             m_ClosingPresenters[ui_name] = StartCoroutine(CloseRoutine(ui_name));
-            
-            UpdateTouchBlock();
         }
 
 
@@ -236,7 +242,6 @@ namespace PowerfulMVP
         
         private IEnumerator LoadRoutine(string ui_name)
         {
-            Debug.Log($"[{m_LogPrefix}] Load - {ui_name}");
             GameObject prefab = null;
             
             if (m_UIFactory != null)
@@ -266,6 +271,8 @@ namespace PowerfulMVP
             }
             
             var obj = Instantiate(prefab, transform);
+            obj.name = ui_name;
+            
             var presenter = obj.GetComponent<Presenter>();
             if (presenter == null)
             {
@@ -276,7 +283,7 @@ namespace PowerfulMVP
             var presenterSetter = (IUIManagerPresenterSetter)presenter;
             presenterSetter.Initialize(setting, ui_name, this, GetPresenterContext(ui_name));
 
-            var parent = m_DepthParents.ContainsKey(presenterSetting.depthID) ? m_DepthParents[presenterSetting.depthID] : transform;
+            var parent = m_DepthGroupParents.ContainsKey(presenterSetting.depthGroupID) ? m_DepthGroupParents[presenterSetting.depthGroupID] : transform;
             presenter.rectTransform.SetParent(parent);
             presenter.rectTransform.anchoredPosition = Vector2.zero;
             presenter.rectTransform.localRotation = Quaternion.identity;
@@ -302,21 +309,22 @@ namespace PowerfulMVP
             var presenterSetter = (IUIManagerPresenterSetter)presenter;
             var presenterSetting = m_PresenterSettings.ContainsKey(ui_name) ? m_PresenterSettings[ui_name] : default;
             
-            if (m_EnabledPresenters.ContainsKey(presenterSetting.depthID) == false)
-                m_EnabledPresenters.Add(presenterSetting.depthID, new List<string>());
-            m_EnabledPresenters[presenterSetting.depthID].Remove(ui_name);
-            m_EnabledPresenters[presenterSetting.depthID].Add(ui_name);
+            if (m_EnabledPresenters.ContainsKey(presenterSetting.depthGroupID) == false)
+                m_EnabledPresenters.Add(presenterSetting.depthGroupID, new List<string>());
+            m_EnabledPresenters[presenterSetting.depthGroupID].Remove(ui_name);
+            m_EnabledPresenters[presenterSetting.depthGroupID].Add(ui_name);
             
-            UpdateSortingOrders(presenterSetting.depthID);
-            UpdateTouchBlock();
-
             presenter.rectTransform.SetAsLastSibling();
             presenterSetter.Open();
+            
+            UpdateSortingOrders(presenterSetting.depthGroupID);
+            UpdateTouchBlock();
+            
             while (presenter.openState == OpenHandler.State.Opening) yield return null;
             
             m_OpeningPresenters.Remove(ui_name);
             
-            UpdateSortingOrders(presenterSetting.depthID);
+            UpdateSortingOrders(presenterSetting.depthGroupID);
             UpdateTouchBlock();
         }
 
@@ -333,36 +341,41 @@ namespace PowerfulMVP
             var presenterSetter = (IUIManagerPresenterSetter)presenter;
             var presenterSetting = m_PresenterSettings.ContainsKey(ui_name) ? m_PresenterSettings[ui_name] : default;
             presenterSetter.Close();
+            UpdateTouchBlock();
+            
             while (presenter != null && presenter.openState == OpenHandler.State.Closing) yield return null;
 
-            if (m_EnabledPresenters.ContainsKey(presenterSetting.depthID) == true)
-                m_EnabledPresenters[presenterSetting.depthID].Remove(ui_name);
+            if (m_EnabledPresenters.ContainsKey(presenterSetting.depthGroupID) == true)
+                m_EnabledPresenters[presenterSetting.depthGroupID].Remove(ui_name);
             
-            if (presenter != null)
-                Destroy(presenter.gameObject);
+            if (presenterSetting.notDestroyOnClose == false)
+            {
+                if (presenter != null)
+                    Destroy(presenter.gameObject);
+            }
             
             m_ClosingPresenters.Remove(ui_name);
             
-            UpdateSortingOrders(presenterSetting.depthID);
+            UpdateSortingOrders(presenterSetting.depthGroupID);
             UpdateTouchBlock();
         }
         
-        private void UpdateSortingOrders(int depthID)
+        private void UpdateSortingOrders(int depthGroupID)
         {
-            if (m_EnabledPresenters.ContainsKey(depthID) == false)
+            if (m_EnabledPresenters.ContainsKey(depthGroupID) == false)
                 return;
 
-            var depthIndex = setting.GetDepthIndex(depthID);
-            for (var i = 0; i < m_EnabledPresenters[depthID].Count; i ++)
+            var depthGroupIndex = setting.GetDepthGroupIndex(depthGroupID);
+            for (var i = 0; i < m_EnabledPresenters[depthGroupID].Count; i ++)
             {
-                var ui_name = m_EnabledPresenters[depthID][i];
+                var ui_name = m_EnabledPresenters[depthGroupID][i];
                 if (string.IsNullOrWhiteSpace(ui_name)) continue;
                 if (m_Presenters.ContainsKey(ui_name) == false) continue;
 
                 var presenter = m_Presenters[ui_name];
                 if (presenter == null) continue;
 
-                presenter.canvas.sortingOrder = (depthIndex + 1) * setting.sortingOrderPerDepth + (i + 1) * setting.sortingOrderPerUI;
+                presenter.canvas.sortingOrder = (depthGroupIndex + 1) * setting.sortingOrderPerDepthGroup + (i + 1) * setting.sortingOrderPerUI;
             }
         }
 
@@ -377,14 +390,14 @@ namespace PowerfulMVP
         private void ProcessEscapeKey()
         {
             var proceedEscapeKey = false;
-            for (var i = setting.depthSettings.Length - 1; i >= 0; i --)
+            for (var i = setting.depthGroupSettings.Length - 1; i >= 0; i --)
             {
-                var depthSetting = setting.depthSettings[i];
-                if (m_EnabledPresenters.ContainsKey(depthSetting.depthID) == false) continue;
+                var depthSetting = setting.depthGroupSettings[i];
+                if (m_EnabledPresenters.ContainsKey(depthSetting.depthGroupID) == false) continue;
 
-                for (var j = m_EnabledPresenters[depthSetting.depthID].Count - 1; j >= 0; j --)
+                for (var j = m_EnabledPresenters[depthSetting.depthGroupID].Count - 1; j >= 0; j --)
                 {
-                    var ui_name = m_EnabledPresenters[depthSetting.depthID][j];
+                    var ui_name = m_EnabledPresenters[depthSetting.depthGroupID][j];
                     if (string.IsNullOrWhiteSpace(ui_name) == true) continue;
 
                     var presenter = GetPresenter(ui_name);

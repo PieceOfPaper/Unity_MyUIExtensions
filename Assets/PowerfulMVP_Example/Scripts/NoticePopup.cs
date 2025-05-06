@@ -8,7 +8,7 @@ namespace PowerfulMVP.Example
     {
         public override Setting setting => new Setting()
         {
-            depthID = 3,
+            depthGroupID = 3,
         };
 
         public class MyContext : Context

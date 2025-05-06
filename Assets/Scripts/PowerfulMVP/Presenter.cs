@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
-using UnityEngine.UIElements;
 
 namespace PowerfulMVP
 {
@@ -16,9 +16,12 @@ namespace PowerfulMVP
     
     public abstract class Presenter : MonoBehaviour, IUIManagerPresenterSetter
     {
+        [System.Serializable]
         public struct Setting
         {
-            public int depthID;
+            public int depthGroupID;
+
+            public bool notDestroyOnClose; //닫혔을 때 자동 파괴되지 않음.
         }
         public abstract Setting setting { get; }
         

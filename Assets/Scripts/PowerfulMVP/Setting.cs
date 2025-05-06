@@ -1,15 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace PowerfulMVP
 {
     [System.Serializable]
-    public struct DepthSettingData
+    public struct DepthGroupSettingData
     {
-        public int depthID;
+        public int depthGroupID;
         public string name;
     }
     
@@ -32,60 +32,60 @@ namespace PowerfulMVP
         
         
         [Header("Sorting Orders")]
-        [Tooltip("Depth당 SortingOrder 증가량")] public int sortingOrderPerDepth = 100;
+        [Tooltip("DepthGroup당 SortingOrder 증가량")] public int sortingOrderPerDepthGroup = 100;
         [Tooltip("UI당 SortingOrder 증가량")] public int sortingOrderPerUI = 10;
         
         
-        [Header("Depth Settings")]
-        [SerializeField] private DepthSettingData[] m_DepthSettings;
-        public DepthSettingData[] depthSettings => m_DepthSettings;
+        [Header("Depth Group Settings")]
+        [SerializeField] private DepthGroupSettingData[] m_DepthGroupSettings;
+        public DepthGroupSettingData[] depthGroupSettings => m_DepthGroupSettings;
 
         
 
         
         
-        private Dictionary<int, DepthSettingData> m_DicDepthSettings = null;
+        private Dictionary<int, DepthGroupSettingData> m_DicDepthGroupSettings = null;
 
-        private void CacheDepthSettings()
+        private void CacheDepthGroupSettings()
         {
-            if (m_DicDepthSettings == null) m_DicDepthSettings = new Dictionary<int, DepthSettingData>();
-            m_DicDepthSettings.Clear();
+            if (m_DicDepthGroupSettings == null) m_DicDepthGroupSettings = new Dictionary<int, DepthGroupSettingData>();
+            m_DicDepthGroupSettings.Clear();
             
-            if (m_DepthSettings != null)
+            if (m_DepthGroupSettings != null)
             {
-                for (var i = 0; i < m_DepthSettings.Length; i ++)
-                    m_DicDepthSettings[m_DepthSettings[i].depthID] = m_DepthSettings[i];
+                for (var i = 0; i < m_DepthGroupSettings.Length; i ++)
+                    m_DicDepthGroupSettings[m_DepthGroupSettings[i].depthGroupID] = m_DepthGroupSettings[i];
             }
         }
         
-        public int GetDepthIndex(int depthID)
+        public int GetDepthGroupIndex(int depthID)
         {
-            if (m_DepthSettings == null)
+            if (m_DepthGroupSettings == null)
                 return -1;
 
-            for (var i = 0; i < m_DepthSettings.Length; i ++)
+            for (var i = 0; i < m_DepthGroupSettings.Length; i ++)
             {
-                if (m_DepthSettings[i].depthID == depthID)
+                if (m_DepthGroupSettings[i].depthGroupID == depthID)
                     return i;
             }
             return -1;
         }
 
-        public int GetDepthIndexLength() => m_DepthSettings?.Length ?? -1;
+        public int GetDepthGroupIndexLength() => m_DepthGroupSettings?.Length ?? -1;
         
-        public DepthSettingData GetDepthSettingData(int depthID)
+        public DepthGroupSettingData GetDepthGroupSettingData(int depthID)
         {
-            if (m_DicDepthSettings == null)
-                CacheDepthSettings();
+            if (m_DicDepthGroupSettings == null)
+                CacheDepthGroupSettings();
 
-            return m_DicDepthSettings.ContainsKey(depthID) ? m_DicDepthSettings[depthID] : default;
+            return m_DicDepthGroupSettings.ContainsKey(depthID) ? m_DicDepthGroupSettings[depthID] : default;
         }
 
         
         
         private void OnValidate()
         {
-            m_DicDepthSettings = null;
+            m_DicDepthGroupSettings = null;
         }
         
     }

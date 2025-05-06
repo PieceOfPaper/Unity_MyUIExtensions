@@ -17,12 +17,12 @@ MonoBehaviour:
   m_DefaultCanvas: {fileID: 5336678506667886031, guid: c43ea767926014bde890a65cc444a1b6, type: 3}
   m_DefaultCanvasScaler: {fileID: 6542526302217976536, guid: c43ea767926014bde890a65cc444a1b6, type: 3}
   m_DefaultGraphicRaycaster: {fileID: 2766504331803130038, guid: c43ea767926014bde890a65cc444a1b6, type: 3}
-  sortingOrderPerDepth: 10000
-  sortingOrderPerUI: 100
-  m_DepthSettings:
-  - depthID: 1
+  sortingOrderPerDepth: 100
+  sortingOrderPerUI: 10
+  m_DepthGroupSettings:
+  - depthGroupID: 1
     name: Base
-  - depthID: 2
+  - depthGroupID: 2
     name: Scene
-  - depthID: 3
+  - depthGroupID: 3
     name: Popup
