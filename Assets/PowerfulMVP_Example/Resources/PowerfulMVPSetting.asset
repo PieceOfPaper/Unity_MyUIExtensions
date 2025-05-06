@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f785f51725cdf44beaf416a5ed97e554, type: 3}
+  m_Name: PowerfulMVPSetting
+  m_EditorClassIdentifier: 
+  m_CameraPrefab: {fileID: 6421983211942406804, guid: 6839bae5a8d4948b0988322ef3566de6, type: 3}
+  m_EventSystemPrefab: {fileID: 2376976416598873283, guid: e59c4ae9233e94f00a51140b15d9c339, type: 3}
+  m_DefaultCanvas: {fileID: 5336678506667886031, guid: c43ea767926014bde890a65cc444a1b6, type: 3}
+  m_DefaultCanvasScaler: {fileID: 6542526302217976536, guid: c43ea767926014bde890a65cc444a1b6, type: 3}
+  m_DefaultGraphicRaycaster: {fileID: 2766504331803130038, guid: c43ea767926014bde890a65cc444a1b6, type: 3}
+  sortingOrderPerDepth: 10000
+  sortingOrderPerUI: 100
+  m_DepthSettings:
+  - depthID: 1
+    name: Base
+  - depthID: 2
+    name: Scene
+  - depthID: 3
+    name: Popup

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace PowerfulMVP.Example
 {
-    public class TestPopup : PresenterTemplate<TestPopup, TestPopup.MyContext>
+    public class MainMenu : PresenterTemplate<MainMenu, MainMenu.MyContext>
     {
         public override Setting setting => new Setting()
         {
@@ -19,6 +19,11 @@ namespace PowerfulMVP.Example
         protected override void OnOpen()
         {
             base.OnOpen();
+        }
+
+        public void OnClick_Notice()
+        {
+            m_Manager.Open<NoticePopup>();
         }
     }
 }

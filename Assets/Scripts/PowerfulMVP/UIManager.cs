@@ -1,14 +1,32 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace PowerfulMVP
 {
+    public abstract class UIFactoryBase
+    {
+        public abstract IEnumerator LoadPrefab(string ui_name, System.Action<GameObject> callback);
+    }
+    
     public class UIManager : MonoBehaviour
     {
+        private bool m_IsInitialized;
+        public bool IsInitialized => m_IsInitialized;
+        
+        
         private Setting m_Setting;
         public Setting setting => m_Setting;
+
+        private UIFactoryBase m_UIFactory;
+
+        private Camera m_Camera;
+        public Camera camera => m_Camera;
+
+        private EventSystem m_EventSystem;
+        public EventSystem eventSystem => m_EventSystem;
         
 
         private readonly Dictionary<int, Transform> m_DepthParents = new Dictionary<int, Transform>();
@@ -21,23 +39,37 @@ namespace PowerfulMVP
         private readonly Dictionary<string, Coroutine> m_OpeningPresenters = new Dictionary<string, Coroutine>();
         private readonly Dictionary<string, Coroutine> m_ClosingPresenters = new Dictionary<string, Coroutine>();
 
+        private GameObject m_TouchBlock;
 
-        private void Awake()
-        {
-            Initialize();
-        }
         
         private void Update()
         {
+            if (IsInitialized == false)
+                return;
+            
             if (Input.GetKeyDown(KeyCode.Escape))
                 ProcessEscapeKey();
         }
         
 
-        public void Initialize()
+        public void Initialize(Setting setting, UIFactoryBase factory)
         {
-            m_Setting = Resources.Load<Setting>("PowerfulMVPSetting");
+            m_Setting = setting;
             if (m_Setting == null) m_Setting = ScriptableObject.CreateInstance<Setting>();
+
+            m_UIFactory = factory;
+
+            if (setting.cameraPrefab != null)
+            {
+                var obj = GameObject.Instantiate(setting.cameraPrefab, transform);
+                m_Camera = obj.GetComponent<Camera>();
+            }
+            
+            if (setting.EventSystemPrefab != null)
+            {
+                var obj = GameObject.Instantiate(setting.EventSystemPrefab, transform);
+                m_EventSystem = obj.GetComponent<EventSystem>();
+            }
 
             if (setting.depthSettings != null)
             {
@@ -55,6 +87,47 @@ namespace PowerfulMVP
                     m_DepthParents[depthSetting.depthID] = depthTransform;
                 }
             }
+
+            m_TouchBlock = new GameObject("TouchBlock");
+            m_TouchBlock.transform.SetParent(transform);
+            var touchBlockTransform = m_TouchBlock.AddComponent<RectTransform>();
+            touchBlockTransform.anchorMin = Vector2.zero;;
+            touchBlockTransform.anchorMax = Vector2.one;;
+            touchBlockTransform.localPosition = Vector3.zero;
+            touchBlockTransform.localRotation = Quaternion.identity;
+            touchBlockTransform.localScale = Vector3.one;
+            touchBlockTransform.SetAsLastSibling();
+            var touchBlockCanvas = m_TouchBlock.AddComponent<Canvas>();
+            if (setting.defaultCanvas != null)
+            {
+                touchBlockCanvas.renderMode = setting.defaultCanvas.renderMode;
+                touchBlockCanvas.pixelPerfect = setting.defaultCanvas.pixelPerfect;
+                touchBlockCanvas.targetDisplay = setting.defaultCanvas.targetDisplay;
+                touchBlockCanvas.additionalShaderChannels = setting.defaultCanvas.additionalShaderChannels;
+                touchBlockCanvas.vertexColorAlwaysGammaSpace = setting.defaultCanvas.vertexColorAlwaysGammaSpace;
+            }
+            touchBlockCanvas.sortingOrder = (setting.GetDepthIndexLength() + 1) * setting.sortingOrderPerDepth;
+            var touchBlockGraphicRaycaster = m_TouchBlock.AddComponent<GraphicRaycaster>();
+            if (setting.defaultGraphicRaycaster != null)
+            {
+                touchBlockGraphicRaycaster.ignoreReversedGraphics = setting.defaultGraphicRaycaster.ignoreReversedGraphics;
+                touchBlockGraphicRaycaster.blockingObjects = setting.defaultGraphicRaycaster.blockingObjects;
+                touchBlockGraphicRaycaster.blockingMask = setting.defaultGraphicRaycaster.blockingMask;
+            }
+            var touchBlockImgObj = new GameObject("Block");
+            touchBlockImgObj.transform.SetParent(touchBlockTransform);
+            var touchBlockImgTransform = touchBlockImgObj.AddComponent<RectTransform>();
+            touchBlockImgTransform.anchorMin = Vector2.zero;;
+            touchBlockImgTransform.anchorMax = Vector2.one;;
+            touchBlockImgTransform.localPosition = Vector3.zero;
+            touchBlockImgTransform.localRotation = Quaternion.identity;
+            touchBlockImgTransform.localScale = Vector3.one;
+            var touchBlockImg = touchBlockImgObj.AddComponent<Image>();
+            touchBlockImg.color = new Color(1f, 1f, 1f, 0f);
+
+            UpdateTouchBlock();
+            
+            m_IsInitialized = true;
         }
         
 
@@ -84,6 +157,8 @@ namespace PowerfulMVP
             }
 
             m_OpeningPresenters[ui_name] = StartCoroutine(OpenRoutine(ui_name));
+            
+            UpdateTouchBlock();
         }
         
         
@@ -112,6 +187,8 @@ namespace PowerfulMVP
             }
 
             m_ClosingPresenters[ui_name] = StartCoroutine(CloseRoutine(ui_name));
+            
+            UpdateTouchBlock();
         }
 
 
@@ -155,9 +232,10 @@ namespace PowerfulMVP
         {
             GameObject prefab = null;
             
-            var request = Resources.LoadAsync<GameObject>($"UI/{ui_name}");
-            yield return request;
-            prefab = request.asset == null ? null : request.asset as GameObject;
+            if (m_UIFactory != null)
+            {
+                yield return m_UIFactory.LoadPrefab(ui_name, result => prefab = result);
+            }
             
             if (prefab == null)
             {
@@ -190,7 +268,7 @@ namespace PowerfulMVP
             }
                 
             var presenterSetter = (IUIManagerPresenterSetter)presenter;
-            presenterSetter.Initialize(ui_name, this, GetPresenterContext(ui_name));
+            presenterSetter.Initialize(setting, ui_name, this, GetPresenterContext(ui_name));
 
             var parent = m_DepthParents.ContainsKey(presenterSetting.depthID) ? m_DepthParents[presenterSetting.depthID] : transform;
             presenter.rectTransform.SetParent(parent);
@@ -223,14 +301,16 @@ namespace PowerfulMVP
             m_EnabledPresenters[presenterSetting.depthID].Add(ui_name);
             
             UpdateSortingOrders(presenterSetting.depthID);
+            UpdateTouchBlock();
 
             presenter.rectTransform.SetAsLastSibling();
             presenterSetter.Open();
             while (presenter.openState == OpenHandler.State.Opening) yield return null;
             
-            UpdateSortingOrders(presenterSetting.depthID);
-            
             m_OpeningPresenters.Remove(ui_name);
+            
+            UpdateSortingOrders(presenterSetting.depthID);
+            UpdateTouchBlock();
         }
 
         private IEnumerator CloseRoutine(string ui_name)
@@ -249,12 +329,14 @@ namespace PowerfulMVP
 
             if (m_EnabledPresenters.ContainsKey(presenterSetting.depthID) == true)
                 m_EnabledPresenters[presenterSetting.depthID].Remove(ui_name);
-            UpdateSortingOrders(presenterSetting.depthID);
             
             if (presenter != null)
                 Destroy(presenter.gameObject);
             
             m_ClosingPresenters.Remove(ui_name);
+            
+            UpdateSortingOrders(presenterSetting.depthID);
+            UpdateTouchBlock();
         }
         
         private void UpdateSortingOrders(int depthID)
@@ -274,6 +356,14 @@ namespace PowerfulMVP
 
                 presenter.canvas.sortingOrder = (depthIndex + 1) * setting.sortingOrderPerDepth + (i + 1) * setting.sortingOrderPerUI;
             }
+        }
+
+        private void UpdateTouchBlock()
+        {
+            var enableBlock = m_OpeningPresenters.Count > 0 || m_ClosingPresenters.Count > 0;
+            
+            if (m_TouchBlock != null)
+                m_TouchBlock.SetActive(enableBlock);
         }
 
         private void ProcessEscapeKey()

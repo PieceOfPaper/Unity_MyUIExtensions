@@ -2,12 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 namespace PowerfulMVP
 {
     public interface IUIManagerPresenterSetter
     {
-        void Initialize(string ui_name, UIManager manager, Presenter.Context context);
+        void Initialize(Setting setting, string ui_name, UIManager manager, Presenter.Context context);
         void Open();
         void Close();
         bool EscapeKey();
@@ -30,6 +31,8 @@ namespace PowerfulMVP
         public string ui_name => m_UIName;
         
         protected UIManager m_Manager;
+        public UIManager manager => m_Manager;
+        
         protected Context m_Context;
 
         private OpenHandler m_OpenHandler;
@@ -49,6 +52,12 @@ namespace PowerfulMVP
         private Canvas m_Canvas;
         public Canvas canvas => m_Canvas;
 
+        private CanvasScaler m_CanvasScaler;
+        public CanvasScaler canvasScaler => m_CanvasScaler;
+
+        private GraphicRaycaster m_GraphicRaycaster;
+        public GraphicRaycaster graphicRaycaster => m_GraphicRaycaster;
+
         private RectTransform m_RectTransform;
         public RectTransform rectTransform => m_RectTransform;
 
@@ -56,7 +65,7 @@ namespace PowerfulMVP
         public bool isInitialized => m_IsInitialized;
         
         
-        void IUIManagerPresenterSetter.Initialize(string ui_name, UIManager manager, Context context)
+        void IUIManagerPresenterSetter.Initialize(PowerfulMVP.Setting setting, string ui_name, UIManager manager, Context context)
         {
             m_UIName = ui_name;
             m_Manager = manager;
@@ -68,6 +77,46 @@ namespace PowerfulMVP
             if (m_Canvas == null)
             {
                 m_Canvas = gameObject.AddComponent<Canvas>();
+                if (setting.defaultCanvas != null)
+                {
+                    m_Canvas.renderMode = setting.defaultCanvas.renderMode;
+                    m_Canvas.pixelPerfect = setting.defaultCanvas.pixelPerfect;
+                    m_Canvas.targetDisplay = setting.defaultCanvas.targetDisplay;
+                    m_Canvas.additionalShaderChannels = setting.defaultCanvas.additionalShaderChannels;
+                    m_Canvas.vertexColorAlwaysGammaSpace = setting.defaultCanvas.vertexColorAlwaysGammaSpace;
+                }
+            }
+            if (m_Canvas.renderMode == RenderMode.ScreenSpaceCamera && m_Canvas.worldCamera == null)
+                m_Canvas.worldCamera = m_Manager.camera;
+
+            m_CanvasScaler = GetComponent<CanvasScaler>();
+            if (m_CanvasScaler == null)
+            {
+                m_CanvasScaler = gameObject.AddComponent<CanvasScaler>();
+                if (setting.defaultCanvasScaler != null)
+                {
+                    m_CanvasScaler.uiScaleMode = setting.defaultCanvasScaler.uiScaleMode;
+                    m_CanvasScaler.referenceResolution = setting.defaultCanvasScaler.referenceResolution;
+                    m_CanvasScaler.screenMatchMode = setting.defaultCanvasScaler.screenMatchMode;
+                    m_CanvasScaler.matchWidthOrHeight = setting.defaultCanvasScaler.matchWidthOrHeight;
+                    m_CanvasScaler.physicalUnit = setting.defaultCanvasScaler.physicalUnit;
+                    m_CanvasScaler.fallbackScreenDPI = setting.defaultCanvasScaler.fallbackScreenDPI;
+                    m_CanvasScaler.defaultSpriteDPI = setting.defaultCanvasScaler.defaultSpriteDPI;
+                    m_CanvasScaler.scaleFactor = setting.defaultCanvasScaler.scaleFactor;
+                    m_CanvasScaler.referencePixelsPerUnit = setting.defaultCanvasScaler.referencePixelsPerUnit;
+                }
+            }
+
+            m_GraphicRaycaster = GetComponent<GraphicRaycaster>();
+            if (m_GraphicRaycaster == null)
+            {
+                m_GraphicRaycaster = gameObject.AddComponent<GraphicRaycaster>();
+                if (setting.defaultGraphicRaycaster != null)
+                {
+                    m_GraphicRaycaster.ignoreReversedGraphics = setting.defaultGraphicRaycaster.ignoreReversedGraphics;
+                    m_GraphicRaycaster.blockingObjects = setting.defaultGraphicRaycaster.blockingObjects;
+                    m_GraphicRaycaster.blockingMask = setting.defaultGraphicRaycaster.blockingMask;
+                }
             }
             
             m_RectTransform = GetComponent<RectTransform>();
@@ -113,6 +162,15 @@ namespace PowerfulMVP
             }
             
             return false;
+        }
+
+
+        public void CallClose()
+        {
+            if (m_Manager == null)
+                return;
+            
+            m_Manager.Close(GetType());
         }
     }
     
