@@ -1,0 +1,29 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using PowerfulMVP;
+
+public class #SCRIPTNAME# : PresenterTemplate<#SCRIPTNAME#, #SCRIPTNAME#.MyContext>
+{
+    public override Setting setting => throw new System.NotImplementedException();
+
+    public class MyContext : Context
+    {
+        
+    }
+
+    protected override void OnOpen()
+    {
+        base.OnOpen();
+    }
+
+    protected override void OnClose()
+    {
+        base.OnClose();
+    }
+
+    protected override bool OnEscapeKey()
+    {
+        return base.OnEscapeKey();
+    }
+}
