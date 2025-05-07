@@ -158,22 +158,37 @@ namespace PowerfulMVP
         {
             switch (openState)
             {
-                case OpenHandler.State.Closed:
                 case OpenHandler.State.Closing:
-                    m_Manager.Close(m_UIName);
-                    return true;
+                case OpenHandler.State.Closed:
+                    return false;
             }
             
-            return false;
+            CallClose();
+            return true;
         }
 
+        [ContextMenu("CallOpen")]
+        public void CallOpen()
+        {
+            if (m_Manager == null)
+            {
+                ((IUIManagerPresenterSetter)this).Open();
+                return;
+            }
+            
+            m_Manager.Open(m_UIName);
+        }
 
+        [ContextMenu("CallClose")]
         public void CallClose()
         {
             if (m_Manager == null)
+            {
+                ((IUIManagerPresenterSetter)this).Close();
                 return;
+            }
             
-            m_Manager.Close(GetType());
+            m_Manager.Close(m_UIName);
         }
     }
     
